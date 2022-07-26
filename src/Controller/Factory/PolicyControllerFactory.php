@@ -16,4 +16,5 @@ class PolicyControllerFactory implements FactoryInterface
         $sessionManager = $container->get(SessionManager::class);
         return new PolicyController($core_repository, $config);
     }
+
 }
