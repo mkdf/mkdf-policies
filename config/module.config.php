@@ -14,11 +14,9 @@ return [
     ],
     'service_manager' => [
         'aliases' => [
-            Repository\MKDFKeysRepositoryInterface::class => Repository\MKDFKeysRepository::class
         ],
         'factories' => [
-            Repository\MKDFKeysRepository::class => Repository\Factory\MKDFKeysRepositoryFactory::class,
-            Feature\AccountKeysFeature::class => InvokableFactory::class
+            Feature\PoliciesFeature::class => InvokableFactory::class
         ]
     ],
     'router' => [
@@ -26,7 +24,7 @@ return [
             'key' => [
                 'type' => Segment::class,
                 'options' => [
-                    'route' => '/my-account/key[/:action[/:id]]',
+                    'route' => '/policy[/:action[/:id]]',
                     'constraints' => [
                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                         'id' => '[a-zA-Z0-9_-]*',
@@ -36,20 +34,6 @@ return [
                         'action' => 'index'
                     ],
                 ],
-                // 'may_terminate' => true,
-                // 'child_routes' => [
- //                                        //
- //                    // // Segment route for viewing one dataset
- //                    // 'details' => [
- //                    //     'type' => Segment::class,
- //                    //     'options' => [
- //                    //         'route' => '/[:id]',
- //                    //         'defaults' => [
- //                    //             'action' => 'details',
- //                    //         ],
- //                    //     ],
- //                    // ]
- //                ],
             ],
         ],
     ],
@@ -60,10 +44,8 @@ return [
     ],
     'controller_plugins' => [
         'factories' => [
-            Controller\Plugin\MKDFKeysRepositoryPlugin::class => Controller\Plugin\Factory\MKDFKeysRepositoryPluginFactory::class,
         ],
         'aliases' => [
-            'MKDFKeysRepository' => Controller\Plugin\MKDFKeysRepositoryPlugin::class,
         ]
     ],
     // The 'access_filter' key is used by the User module to restrict or permit
