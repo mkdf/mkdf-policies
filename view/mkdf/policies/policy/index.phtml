@@ -1,0 +1,25 @@
+<h1><?= $dataset->title ?></h1>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <?= $this->partial('mkdf/datasets/partial/dataset-features', ['features' => $features, 'dataset_id' => $dataset->id] ) ?>
+        </div>
+        <div class="col-md-9">
+            <?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
+
+            <h2>Licenses and policies</h2>
+            <?= $this->partial('mkdf/core/partial/actions', $actions); ?>
+            <!--
+            UUID: <?= $dataset->uuid ?><br />
+            -->
+            <h4>Current license</h4>
+            <pre>
+<?= stripslashes(json_encode($license, JSON_PRETTY_PRINT)) ?>
+            </pre>
+
+
+
+        </div>
+    </div>
+</div>
+

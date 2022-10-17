@@ -1,0 +1,189 @@
+<h1><?= $dataset->title ?></h1>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <?= $this->partial('mkdf/datasets/partial/dataset-features', ['features' => $features, 'dataset_id' => $dataset->id] ) ?>
+        </div>
+        <div class="col-md-9">
+            <h2>Licenses and policies</h2>
+            <?= $this->partial('mkdf/core/partial/actions', $actions); ?>
+            <!--
+            UUID: <?= $dataset->uuid ?><br />
+            -->
+            <h4>Create a new license</h4>
+
+
+            <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createModalLabel">Policy creation</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <h6>Policy</h6>
+                            <p>Policy creation form here...</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewModalLabel">Policy view</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <h6>Policy</h6>
+                            <p>Policy attributes, constraints and body here, including editing options</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <form>
+                <div class="form-group">
+                    <label for="licenseTitle">License title</label>
+                    <input type="text" class="form-control" id="licenseTitle"  placeholder="license title">
+                </div>
+                <div class="form-group">
+                    <label for="licenseText">License text body</label>
+                    <textarea class="form-control" id="licenseText" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="assignee">License assignee</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="assignee" id="assigneeAnon" value="assigneeAnon" checked>
+                    <label class="form-check-label" for="assigneeAnon">
+                        Anonymous users
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="assignee" id="assigneeLoggedIn" value="assigneeLoggedIn">
+                    <label class="form-check-label" for="assigneeLoggedIn">
+                        Logged in users
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="assignee" id="assigneeUser" value="assigneeUser">
+                    <label class="form-check-label" for="assigneeUser">
+                        Named user
+                    </label>
+                </div>
+                    <!-- <label for="namedAssignee">Named user email address</label> -->
+                    <input type="text" class="form-control" id="namedAssignee"  placeholder="email address">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5>Permissions <span class="text-primary">
+                                <a href="#" class="text-primary" data-toggle="modal" data-target="#createModal">
+                                    <i class="fas fa-plus-square"></i>
+                                </a>
+                            </span></h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                                Private use
+                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
+                            </li>
+                            <li class="list-group-item">
+                                <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                                Distribution
+                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
+                            </li>
+                            <li class="list-group-item">
+                                <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                                Modification
+                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Obligations <span class="text-primary">
+                                <a href="#" class="text-primary" data-toggle="modal" data-target="#createModal">
+                                    <i class="fas fa-plus-square"></i>
+                                </a>
+                            </span></h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <span class="text-info">
+                                    <i class="fas fa-exclamation-circle"></i></span>
+                                Attribution
+                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
+                            </li>
+                            <li class="list-group-item"><span class="text-info">
+                                    <i class="fas fa-exclamation-circle"></i></span>
+                                Liability
+                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Prohibitions <span class="text-primary">
+                                <a href="#" class="text-primary" data-toggle="modal" data-target="#createModal">
+                                    <i class="fas fa-plus-square"></i>
+                                </a>
+                            </span></h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <span class="text-danger"><i class="fas fa-times-circle"></i></span>
+                                Commercial use
+                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
+                            </li>
+                            <li class="list-group-item">
+                                <span class="text-danger"><i class="fas fa-times-circle"></i></span>
+                                Modification
+                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <hr />
+
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+
+
+
+        </div>
+    </div>
+</div>
+
