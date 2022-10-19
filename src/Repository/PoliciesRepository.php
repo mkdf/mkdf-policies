@@ -40,7 +40,20 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         }
     }
 
-    public function getDatasetUSerLicenseHistory($datasetUuid, $user) {
-        
+    public function getDatasetUserLicenseHistory($datasetUuid, $user) {
+        $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        if (count($metadataResponse) === 0) {
+            // list is empty.
+            $metadata = [];
+        }
+        else {
+            $metadata = $metadataResponse[0];
+        }
+        if (isset($metadata['policy'])){
+            return $metadata['policy'];
+        }
+        else {
+            return null;
+        }
     }
 }

@@ -1,6 +1,8 @@
 <?php
 namespace MKDF\Policies\Controller;
 
+use MKDF\Policies\Repository\PoliciesRepositoryInterface;
+use MKDF\Policies\Repository\PoliciesRepository;
 use MKDF\Datasets\Repository\MKDFDatasetRepositoryInterface;
 use MKDF\Datasets\Service\DatasetPermissionManager;
 use MKDF\Datasets\Service\DatasetPermissionManagerInterface;
@@ -16,14 +18,16 @@ class PolicyController extends AbstractActionController
     private $_config;
     private $viewRenderer;
     private $_repository;
+    private $_policyRepository;
     private $_dataset_repository;
     private $_permissionManager;
 
-    public function __construct(MKDFStreamRepositoryInterface $repository, MKDFDatasetRepositoryInterface $datasetRepository, DatasetPermissionManager $permissionManager, array $config, $viewRenderer)
+    public function __construct(PoliciesRepositoryInterface $policyRepository, MKDFStreamRepositoryInterface $repository, MKDFDatasetRepositoryInterface $datasetRepository, DatasetPermissionManager $permissionManager, array $config, $viewRenderer)
     {
         $this->_config = $config;
         $this->viewRenderer = $viewRenderer;
         $this->_repository = $repository;
+        $this->_policyRepository = $policyRepository;
         $this->_dataset_repository = $datasetRepository;
         $this->_permissionManager = $permissionManager;
     }
@@ -124,7 +128,7 @@ class PolicyController extends AbstractActionController
                         'class' => '',
                         'type' => 'primary',
                         'icon' => 'create',
-                        'label' => 'Create a new license',
+                        'label' => 'Create a new custom license',
                         'target' => 'dataset-policies',
                         'params' => [
                             'action' => 'create',
@@ -135,7 +139,7 @@ class PolicyController extends AbstractActionController
                         'class' => '',
                         'type' => 'warning',
                         'icon' => 'view',
-                        'label' => 'Apply an existing license',
+                        'label' => 'Select and apply a standard license',
                         'target' => 'dataset-policies',
                         'params' => [
                             'action' => 'select',
@@ -145,6 +149,8 @@ class PolicyController extends AbstractActionController
                 ]
             ];
 
+            $license = $this->_policyRepository->getDatasetUserLicense($dataset->uuid, 'all');
+
             return new ViewModel([
                 'messages' => $messages,
                 'dataset' => $dataset,
@@ -152,7 +158,8 @@ class PolicyController extends AbstractActionController
                 'actions' => $actions,
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
-                'license' => $dummyLicense,
+                'license' => $license['dataset']['active'][0],
+                'history' => $license['dataset']['inactive'],
             ]);
         }
         else{
@@ -163,6 +170,7 @@ class PolicyController extends AbstractActionController
 
     public function selectAction() {
         $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
         $id = (int) $this->params()->fromRoute('id', 0);
         $dataset = $this->_dataset_repository->findDataset($id);
         //$permissions = $this->_repository->findDatasetPermissions($id);
@@ -184,7 +192,8 @@ class PolicyController extends AbstractActionController
                 'actions' => $actions,
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
-                'licenses' => $licenses
+                'licenses' => $licenses,
+                'assigner' => $user_email
             ]);
         }
         else{
@@ -237,6 +246,7 @@ class PolicyController extends AbstractActionController
 
     public function applyAction() {
         $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
         $id = (int) $this->params()->fromRoute('id', 0);
         $token = $this->params()->fromQuery('token', null);
         $license = $this->params()->fromQuery('license', null);
@@ -279,7 +289,7 @@ class PolicyController extends AbstractActionController
                     else {
                         $metadata = $metadataResponse[0];
                     }
-                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, 'all', $metadata);
+                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $user_email, 'all', $metadata);
                     $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
                     $this->flashMessenger()->addMessage('The license has been applied to the dataset');
                 }
@@ -310,7 +320,7 @@ class PolicyController extends AbstractActionController
         }
     }
 
-    private function addLicenseToMetadata($datasetUuid, $licenseId, $assignee, $metadata) {
+    private function addLicenseToMetadata($datasetUuid, $licenseId, $assigner, $assignee, $metadata) {
         if (!isset($metadata['policy'])) {
             $metadata['policy'] =
                 [
@@ -356,7 +366,7 @@ class PolicyController extends AbstractActionController
         ];
         $licenseBody = json_decode($this->getLicenses($search, False),True)[0];
         $licenseBody['odrl:assignee'] = $assignee;
-        $licenseBody['odrl:assigner'] = $assignee;
+        $licenseBody['odrl:assigner'] = $assigner;
         $licenseBody['odrl:target'] = $datasetUuid; // FIXME - dataset URI here
         $licenseBody['active'] = True;
         $licenseBody['created-time'] = $nowTime;

@@ -86,16 +86,57 @@
                     }
                 ?>
                 </select>
-                <br />
-                <button type="submit" class="btn btn-primary"><i class="fas fa-plus-square"></i> Apply this license to the dataset</button>
+                <hr />
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Apply license to:</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="licenseScope" id="exampleRadios1" value="option1" checked>
+                            <label class="form-check-label" for="exampleRadios1">
+                                Entire dataset
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="licenseScope" id="exampleRadios2" value="option2" disabled>
+                            <label class="form-check-label" for="exampleRadios2">
+                                Individual JSON document
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="licenseScope" id="exampleRadios3" value="option3" disabled>
+                            <label class="form-check-label" for="exampleRadios3">
+                                Individual file
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>License applies to:</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="userScope" id="exampleRadios1" value="option1" checked>
+                            <label class="form-check-label" for="exampleRadios1">
+                                All users
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="userScope" id="exampleRadios2" value="option2" disabled>
+                            <label class="form-check-label" for="exampleRadios2">
+                                Individual user or group
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus-square"></i> Apply license</button>
+                    </div>
+                </div>
+
             </form>
 
             <hr />
             <div class="row">
                 <div class="col-md-4">
-                    <h5>Permissions
+                    <h6>Permissions
                         <a href='#' class='text-secondary' data-toggle='modal' data-target='#permissionModal'><i class='fas fa-info-circle'></i></a>
-                    </h5>
+                    </h6>
                     <ul class="list-group" id="permissionList">
                         <li class="list-group-item">
                             <span class="text-success"><i class="fas fa-check-circle"></i></span>
@@ -121,9 +162,9 @@
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5>Obligations
+                    <h6>Obligations
                         <a href='#' class='text-secondary' data-toggle='modal' data-target='#obligationModal'><i class='fas fa-info-circle'></i></a>
-                    </h5>
+                    </h6>
                     <ul class="list-group" id="obligationList">
                         <li class="list-group-item">
                                 <span class="text-info">
@@ -143,9 +184,9 @@
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5>Prohibitions
+                    <h6>Prohibitions
                         <a href='#' class='text-secondary' data-toggle='modal' data-target='#prohibitionModal'><i class='fas fa-info-circle'></i></a>
-                    </h5>
+                    </h6>
                     <ul class="list-group" id="prohibitionList">
                         <li class="list-group-item">
                             <span class="text-danger"><i class="fas fa-times-circle"></i></span>
@@ -165,7 +206,7 @@
                 </div>
             </div>
             <hr />
-            Full license source:
+            <h6>Full license source:</h6>
             <pre><span id="demo"></span></pre>
 
         </div>

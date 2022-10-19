@@ -1,6 +1,8 @@
 <?php
 namespace MKDF\Policies\Controller\Factory;
 
+use MKDF\Policies\Repository\PoliciesRepositoryInterface;
+use MKDF\Policies\Repository\PoliciesRepository;
 use MKDF\Datasets\Repository\MKDFDatasetRepositoryInterface;
 use MKDF\Datasets\Service\DatasetPermissionManagerInterface;
 use MKDF\Stream\Repository\Factory\MKDFStreamRepositoryFactory;
@@ -17,7 +19,8 @@ class PolicyControllerFactory implements FactoryInterface
         $viewRenderer = $container->get('ViewRenderer');
         $dataset_repository = $container->get(MKDFDatasetRepositoryInterface::class);
         $repository = $container->get(MKDFStreamRepositoryInterface::class);
+        $policyRepository = $container->get(PoliciesRepositoryInterface::class);
         $permissionManager = $container->get(DatasetPermissionManagerInterface::class);
-        return new PolicyController($repository, $dataset_repository, $permissionManager, $config, $viewRenderer);
+        return new PolicyController($policyRepository, $repository, $dataset_repository, $permissionManager, $config, $viewRenderer);
     }
 }
