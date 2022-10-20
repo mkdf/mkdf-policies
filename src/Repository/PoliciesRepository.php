@@ -40,7 +40,7 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         }
     }
 
-    public function getDatasetUserLicenseHistory($datasetUuid, $user) {
+    public function getDatasetUserLicenseHistory($datasetUuid, $assignee) {
         $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
         if (count($metadataResponse) === 0) {
             // list is empty.

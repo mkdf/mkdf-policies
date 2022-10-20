@@ -7,6 +7,6 @@
 </p>
 <?= $this->partial('mkdf/core/partial/actions', [
     'buttons'=>[
-        ['type'=>'primary','label'=>'Yes, apply this license', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'apply'], 'query' => ['license' => $license, 'token' => $token]],
+        ['type'=>'primary','label'=>'Yes, apply this license', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'apply'], 'query' => ['license' => $license, 'userScope' => $userScope, 'assigneeEmail' => $assigneeEmail, 'token' => $token]],
         ['type'=>'danger','label'=>'No, go back please', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'index']]]
 ] ); ?>

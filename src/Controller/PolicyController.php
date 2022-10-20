@@ -158,7 +158,7 @@ class PolicyController extends AbstractActionController
                 'actions' => $actions,
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
-                'license' => $license['dataset']['active'][0],
+                'license' => $this->getDatasetLicenseFromLicenseMetadata($license, 'all'),
                 'history' => $license['dataset']['inactive'],
             ]);
         }
@@ -166,6 +166,16 @@ class PolicyController extends AbstractActionController
             $this->flashMessenger()->addMessage('You do not have manage rights on this dataset');
             return $this->redirect()->toRoute('dataset', ['action'=>'details', 'id'=>$dataset->id]);
         }
+    }
+
+    private function getDatasetLicenseFromLicenseMetadata($data, $assignee) {
+        $activeLicenses = $data['dataset']['active'];
+        foreach ($activeLicenses as $license) {
+            if ($license['odrl:assignee'] == $assignee) {
+                return ($license);
+            }
+        }
+        return $activeLicenses[0];
     }
 
     public function selectAction() {
@@ -179,6 +189,7 @@ class PolicyController extends AbstractActionController
         $can_view = $this->_permissionManager->canView($dataset,$user_id);
         $can_read = $this->_permissionManager->canRead($dataset,$user_id);
         $can_edit = $this->_permissionManager->canEdit($dataset,$user_id);
+
 
         $actions = [];
 
@@ -250,6 +261,10 @@ class PolicyController extends AbstractActionController
         $id = (int) $this->params()->fromRoute('id', 0);
         $token = $this->params()->fromQuery('token', null);
         $license = $this->params()->fromQuery('license', null);
+        $userScope = $this->params()->fromQuery('userScope', null);
+        $licenseScope = $this->params()->fromQuery('licenseScope', null);
+        $assigneeEmail = $this->params()->fromQuery('assigneeEmail', null);
+
         $dataset = $this->_dataset_repository->findDataset($id);
         //$permissions = $this->_repository->findDatasetPermissions($id);
         $message = "Dataset: " . $id;
@@ -276,6 +291,22 @@ class PolicyController extends AbstractActionController
                 return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
             }
 
+            // If applying license to a single user, check email address is a valid user before getting to the token stage
+            if ($userScope == 'namedUser') {
+                $assigneeUserId =  $this->userIdFromEmail($assigneeEmail);
+                if ($assigneeUserId == 0) {
+                    $this->flashMessenger()->addMessage('No such user - '.$assigneeEmail);
+                    return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id' => $dataset->id]);
+                }
+                else {
+                    // set assignee
+                    // $assigneeEmail already set, no need to worry
+                }
+            }
+            else {
+                $assigneeEmail = "all";
+            }
+
             if (!is_null($token)) {
                 $container = new Container('apply_license');
                 $valid_token = ($container->apply_token == $token);
@@ -289,7 +320,8 @@ class PolicyController extends AbstractActionController
                     else {
                         $metadata = $metadataResponse[0];
                     }
-                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $user_email, 'all', $metadata);
+
+                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $user_email, $assigneeEmail, $metadata);
                     $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
                     $this->flashMessenger()->addMessage('The license has been applied to the dataset');
                 }
@@ -310,7 +342,9 @@ class PolicyController extends AbstractActionController
                     'can_edit' => $can_edit,
                     'can_read' => $can_read,
                     'token' => $token,
-                    'license' => $license
+                    'license' => $license,
+                    'userScope' => $userScope,
+                    'assigneeEmail' => $assigneeEmail,
                 ]);
             }
         }

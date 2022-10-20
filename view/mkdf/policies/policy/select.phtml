@@ -91,20 +91,20 @@
                     <div class="col-md-4">
                         <h6>Apply license to:</h6>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="licenseScope" id="exampleRadios1" value="option1" checked>
-                            <label class="form-check-label" for="exampleRadios1">
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeDataset" value="dataset" checked>
+                            <label class="form-check-label" for="licenseScopeDataset">
                                 Entire dataset
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="licenseScope" id="exampleRadios2" value="option2" disabled>
-                            <label class="form-check-label" for="exampleRadios2">
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeJson" value="json" disabled>
+                            <label class="form-check-label" for="licenseScopeJson">
                                 Individual JSON document
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="licenseScope" id="exampleRadios3" value="option3" disabled>
-                            <label class="form-check-label" for="exampleRadios3">
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeFile" value="file" disabled>
+                            <label class="form-check-label" for="licenseScopeFile">
                                 Individual file
                             </label>
                         </div>
@@ -112,16 +112,19 @@
                     <div class="col-md-4">
                         <h6>License applies to:</h6>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="userScope" id="exampleRadios1" value="option1" checked>
-                            <label class="form-check-label" for="exampleRadios1">
+                            <input class="form-check-input" type="radio" name="userScope" id="userScopeAll" value="all" checked>
+                            <label class="form-check-label" for="userScopeAll">
                                 All users
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="userScope" id="exampleRadios2" value="option2" disabled>
-                            <label class="form-check-label" for="exampleRadios2">
-                                Individual user or group
+                            <input class="form-check-input" type="radio" name="userScope" id="userScopeNamedUser" value="namedUser">
+                            <label class="form-check-label" for="exampleuserScopeNamedUserRadios2">
+                                Individual user
                             </label>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-control" name="assigneeEmail" id="assigneeEmail" placeholder="Enter user's email">
                         </div>
                     </div>
                     <div class="col-md-4">
