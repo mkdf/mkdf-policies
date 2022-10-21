@@ -53,21 +53,25 @@
 
             <br />
 
-            <h5>Current dataset license: <br /><em><?= $license['schema:title'] ?></em></h5>
+            <h5><?= $license['schema:title'] ?></h5>
 
             <div class="accordion" id="accordionExample">
                 <div class="card">
                     <div class="card-header" id="headingOne">
                         <h5 class="mb-0">
-                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                                 License details and actions
                             </button>
                         </h5>
                     </div>
 
-                    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
                         <div class="card-body">
-                            <h5><?= $license['schema:title'] ?></h5>
+                            <p>
+                                <strong>License: </strong><?= $license['schema:title'] ?><br />
+                                <strong>Data scope: </strong><em>Entire dataset</em><br />
+                                <strong>Assignee scope: </strong><em><?= $assignee ?></em>
+                            </p>
 
                             <div class="btn-group" role="group" aria-label="Basic example">
                                 <button type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Remove license</button>
@@ -80,12 +84,12 @@
                 <div class="card">
                     <div class="card-header" id="headingTwo">
                         <h5 class="mb-0">
-                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                                 License policies
                             </button>
                         </h5>
                     </div>
-                    <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
                         <div class="card-body">
                             <!-- policies here -->
                             <div class="row">
