@@ -97,6 +97,10 @@ class PolicyController extends AbstractActionController
         $user_id = $this->currentUser()->getId();
         $id = (int) $this->params()->fromRoute('id', 0);
         $dataset = $this->_dataset_repository->findDataset($id);
+        $typeParam = $this->params()->fromQuery('type', dataset);
+        $assigneeParam = $this->params()->fromQuery('assignee', 'all');
+        $jsonParam = $this->params()->fromQuery('jsonDoc', null);
+        $fileParam = $this->params()->fromQuery('filename', null);
         //$permissions = $this->_repository->findDatasetPermissions($id);
         $message = "Dataset: " . $id;
         $messages = [];
@@ -149,7 +153,8 @@ class PolicyController extends AbstractActionController
                 ]
             ];
 
-            $license = $this->_policyRepository->getDatasetUserLicense($dataset->uuid, 'all');
+            $license = $this->_policyRepository->getDatasetUserLicense($dataset->uuid, $assigneeParam);
+            $assigneeList = $this->_policyRepository->getDatasetLicenseUserList($dataset->uuid);
 
             return new ViewModel([
                 'messages' => $messages,
@@ -158,8 +163,11 @@ class PolicyController extends AbstractActionController
                 'actions' => $actions,
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
-                'license' => $this->getDatasetLicenseFromLicenseMetadata($license, 'all'),
-                'history' => $license['dataset']['inactive'],
+                'license' => $license,
+                // FIXME - History currently showing all licenses (inc user/resource specific), not just dataset-wide
+                'history' => [$license],
+                'assigneeList' => $assigneeList,
+                'assignee' => $assigneeParam
             ]);
         }
         else{

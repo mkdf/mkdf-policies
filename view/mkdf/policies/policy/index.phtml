@@ -12,21 +12,44 @@
             <!--
             UUID: <?= $dataset->uuid ?><br />
             -->
-            <br /><br />
+            <br />
+            <br />
+            <!--
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a class="nav-link btn-light" href="">Dataset</a>
                 </li>
+
                 <li class="nav-item" role="presentation">
                     <a class="nav-link btn-secondary" href="">JSON documents</a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a class="nav-link btn-secondary" href="">Files</a>
                 </li>
+
                 <li class="nav-item" role="presentation">
                     <a class="nav-link btn-secondary" href="">Users & groups</a>
                 </li>
             </ul>
+            -->
+
+            <h6>License assignee:</h6>
+            <form id="selectLicense" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
+            <div class="row">
+                <div class="col-md-8">
+                    <select class="form-control" id="assignee" name="assignee" onchange="loadLicense();">
+                        <?php foreach($assigneeList as $assigneeListItem): ?>
+                            <?php $selected = ($assigneeListItem == $assignee ? "selected" : ""); ?>
+                            <option value='<?= $assigneeListItem ?>' <?= $selected ?>><?= $assigneeListItem ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-redo"></i> Reload</button>
+                </div>
+            </div>
+            </form>
+
 
             <br />
 

@@ -23,7 +23,7 @@ class PoliciesRepository implements PoliciesRepositoryInterface
 
     }
 
-    public function getDatasetUserLicense($datasetUuid, $user){
+    public function getDatasetUserLicense($datasetUuid, $assignee){
         $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
         if (count($metadataResponse) === 0) {
             // list is empty.
@@ -33,11 +33,35 @@ class PoliciesRepository implements PoliciesRepositoryInterface
             $metadata = $metadataResponse[0];
         }
         if (isset($metadata['policy'])){
-            return $metadata['policy'];
+            // FIXME - return only the license for the assignee
+            foreach ($metadata['policy']['dataset']['active'] as $licenseItem) {
+                if ($licenseItem['odrl:assignee'] == $assignee) {
+                    return $licenseItem;
+                }
+            }
+        }
+        return null;
+    }
+
+    public function getDatasetLicenseUserList($datasetUuid) {
+        $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        if (count($metadataResponse) === 0) {
+            // list is empty.
+            $metadata = [];
         }
         else {
-            return null;
+            $metadata = $metadataResponse[0];
         }
+        $userList = [];
+        if (isset($metadata['policy'])){
+            // Loop through all the active policies
+            foreach ($metadata['policy']['dataset']['active'] as $license) {
+                if (!in_array($license['odrl:assignee'], $userList)) {
+                    array_push($userList, $license['odrl:assignee']);
+                }
+            }
+        }
+        return $userList;
     }
 
     public function getDatasetUserLicenseHistory($datasetUuid, $assignee) {
