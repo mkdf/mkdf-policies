@@ -155,6 +155,7 @@ class PolicyController extends AbstractActionController
 
             $license = $this->_policyRepository->getDatasetUserLicense($dataset->uuid, $assigneeParam);
             $assigneeList = $this->_policyRepository->getDatasetLicenseUserList($dataset->uuid);
+            $history = $this->_policyRepository->getDatasetUserLicenseHistory($dataset->uuid, $assigneeParam);
 
             return new ViewModel([
                 'messages' => $messages,
@@ -164,8 +165,7 @@ class PolicyController extends AbstractActionController
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
                 'license' => $license,
-                // FIXME - History currently showing all licenses (inc user/resource specific), not just dataset-wide
-                'history' => [$license],
+                'history' => $history,
                 'assigneeList' => $assigneeList,
                 'assignee' => $assigneeParam
             ]);

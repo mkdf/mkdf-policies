@@ -33,7 +33,6 @@ class PoliciesRepository implements PoliciesRepositoryInterface
             $metadata = $metadataResponse[0];
         }
         if (isset($metadata['policy'])){
-            // FIXME - return only the license for the assignee
             foreach ($metadata['policy']['dataset']['active'] as $licenseItem) {
                 if ($licenseItem['odrl:assignee'] == $assignee) {
                     return $licenseItem;
@@ -66,6 +65,7 @@ class PoliciesRepository implements PoliciesRepositoryInterface
 
     public function getDatasetUserLicenseHistory($datasetUuid, $assignee) {
         $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        $history = [];
         if (count($metadataResponse) === 0) {
             // list is empty.
             $metadata = [];
@@ -73,11 +73,13 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         else {
             $metadata = $metadataResponse[0];
         }
-        if (isset($metadata['policy'])){
-            return $metadata['policy'];
+        if (isset($metadata['policy']['dataset']['inactive'])){
+            foreach ($metadata['policy']['dataset']['inactive'] as $license) {
+                if ($license['odrl:assignee'] == $assignee) {
+                    array_push($history, $license);
+                }
+            }
         }
-        else {
-            return null;
-        }
+        return $history;
     }
 }
