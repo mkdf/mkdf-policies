@@ -321,14 +321,14 @@ class PolicyController extends AbstractActionController
                 if ($valid_token) {  // Apply license here...
                     //Retrieve license
                     $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $dataset->uuid), True);
-                    if (count($metadataResponse) === 0) {
-                        // list is empty.
-                        $metadata = [];
-                    }
-                    else {
+                    $metadata = [];
+                    if (count($metadataResponse) >= 1) {
                         $metadata = $metadataResponse[0];
                     }
-
+                    else {
+                        //the metadata has no '_id', so create it
+                        $metadata['_id'] = $dataset->uuid;
+                    }
                     $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $user_email, $assigneeEmail, $metadata);
                     $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
                     $this->flashMessenger()->addMessage('The license has been applied to the dataset');
@@ -381,7 +381,6 @@ class PolicyController extends AbstractActionController
                 ];
         }
 
-
         $licenseReplaced = False;
         $nowTime = time();
         $keysToRemove = [];
@@ -415,11 +414,6 @@ class PolicyController extends AbstractActionController
         $licenseBody['schema:validFrom'] = $nowTime;
         $licenseBody['schema:validUntil'] = 7500000000; // 185 years away
         array_unshift($metadata['policy']['dataset']['active'], $licenseBody);
-
-        // TODO - build license object with assignee, dates and other appropriate metadata
-        // created-time
-        // valid-from
-        // valid-to
 
         return $metadata;
     }
