@@ -76,8 +76,12 @@
                             </p>
 
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <button type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Remove license</button>
-                                <button type="button" class="btn btn-warning"><i class="fas fa-edit"></i> Modify license</button>
+                                <?= $this->partial('mkdf/core/partial/actions', [
+                                    'buttons'=>[
+                                        ['type'=>'danger','label'=>'Remove license', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'delete'], 'query' => ['license' => $license, 'userScope' => $userScope, 'assigneeEmail' => $assigneeEmail]],
+                                ] ); ?>
+                                <a class="btn btn-danger" href="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'delete'],[]); ?>" role="button"><i class="fas fa-trash-alt"></i> Remove license</a>
+                                <a class="btn btn-warning" href="#" role="button"><i class="fas fa-edit"></i> Modify license</a>
                             </div>
 
                         </div>

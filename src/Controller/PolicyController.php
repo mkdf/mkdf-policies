@@ -362,6 +362,103 @@ class PolicyController extends AbstractActionController
         }
     }
 
+    public function deleteAction() {
+        $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
+        $id = (int) $this->params()->fromRoute('id', 0);
+        $token = $this->params()->fromQuery('token', null);
+        $license = $this->params()->fromQuery('license', null);
+        $userScope = $this->params()->fromQuery('userScope', null);
+        $licenseScope = $this->params()->fromQuery('licenseScope', null);
+        $assigneeEmail = $this->params()->fromQuery('assigneeEmail', null);
+
+        $dataset = $this->_dataset_repository->findDataset($id);
+        //$permissions = $this->_repository->findDatasetPermissions($id);
+        $message = "Dataset: " . $id;
+        $messages = [];
+        $flashMessenger = $this->flashMessenger();
+        if ($flashMessenger->hasMessages()) {
+            foreach($flashMessenger->getMessages() as $flashMessage) {
+                $messages[] = [
+                    'type' => 'warning',
+                    'message' => $flashMessage
+                ];
+            }
+        }
+        $actions = [];
+        $can_view = $this->_permissionManager->canView($dataset,$user_id);
+        $can_read = $this->_permissionManager->canRead($dataset,$user_id);
+        $can_edit = $this->_permissionManager->canEdit($dataset,$user_id);
+
+        $actions = [];
+
+        if ($can_view && $can_edit) {
+            if (is_null($license)) {
+                $this->flashMessenger()->addMessage('Error: No license specified');
+                return $this->redirect()->toRoute('dataset-policies', ['action' => 'index', 'id' => $dataset->id]);
+            }
+            // If applying license to a single user, check email address is a valid user before getting to the token stage
+            if ($userScope == 'namedUser') {
+                $assigneeUserId =  $this->userIdFromEmail($assigneeEmail);
+                if ($assigneeUserId == 0) {
+                    $this->flashMessenger()->addMessage('No such user - '.$assigneeEmail);
+                    return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id' => $dataset->id]);
+                }
+                else {
+                    // set assignee
+                    // $assigneeEmail already set, no need to worry
+                }
+            }
+            else {
+                $assigneeEmail = "all";
+            }
+            if (!is_null($token)) {
+                $container = new Container('delete_license');
+                $valid_token = ($container->delete_token == $token);
+                if ($valid_token) {  // Delete license here...
+                    //Retrieve license
+                    $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $dataset->uuid), True);
+                    $metadata = [];
+                    if (count($metadataResponse) < 1) {
+                        $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
+                        $this->flashMessenger()->addMessage('Error: Dataset metadata does not exist');
+                    }
+                    else {
+                        $metadata = $metadataResponse[0];
+                    }
+                    // TODO - Delete license here
+                    //$this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
+                    $this->flashMessenger()->addMessage('The license has been applied to the dataset');
+                }
+                else {
+                    $this->flashMessenger()->addMessage('Error: Invalid token. The license was not deleted.');
+                }
+                return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+            }
+            else {
+                $token = uniqid(true);
+                $container = new Container('apply_license');
+                $container->apply_token = $token;
+                return new ViewModel([
+                    'messages' => $messages,
+                    'dataset' => $dataset,
+                    'features' => $this->datasetsFeatureManager()->getFeatures($id),
+                    'actions' => $actions,
+                    'can_edit' => $can_edit,
+                    'can_read' => $can_read,
+                    'token' => $token,
+                    'license' => $license,
+                    'userScope' => $userScope,
+                    'assigneeEmail' => $assigneeEmail,
+                ]);
+            }
+        }
+        else {
+            $this->flashMessenger()->addMessage('You do not have manage rights on this dataset');
+            return $this->redirect()->toRoute('dataset', ['action'=>'details', 'id'=>$dataset->id]);
+        }
+    }
+
     private function addLicenseToMetadata($datasetUuid, $licenseId, $assigner, $assignee, $metadata) {
         if (!isset($metadata['policy'])) {
             $metadata['policy'] =
