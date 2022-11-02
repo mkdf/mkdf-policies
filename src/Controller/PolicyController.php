@@ -202,7 +202,7 @@ class PolicyController extends AbstractActionController
         $actions = [];
 
         if ($can_view && $can_edit) {
-            $licenses = json_decode($this->getLicenses());
+            $licenses = json_decode($this->_policyRepository->getLicenses());
 
             return new ViewModel([
                 'message' => $message,
@@ -259,7 +259,7 @@ class PolicyController extends AbstractActionController
                 '_id' => $uid
             ];
         }
-        $licenses = json_decode($this->getLicenses($search));
+        $licenses = json_decode($this->_policyRepository->getLicenses($search));
         return new JsonModel($licenses);
     }
 
@@ -502,7 +502,7 @@ class PolicyController extends AbstractActionController
         $search = [
             '_id' => $licenseId
         ];
-        $licenseBody = json_decode($this->getLicenses($search, False),True)[0];
+        $licenseBody = json_decode($this->_policyRepository->getLicenses($search, False),True)[0];
         $licenseBody['odrl:assignee'] = $assignee;
         $licenseBody['odrl:assigner'] = $assigner;
         $licenseBody['odrl:target'] = $datasetUuid; // FIXME - dataset URI here
@@ -515,6 +515,8 @@ class PolicyController extends AbstractActionController
         return $metadata;
     }
 
+    /*
+     * FUNCTION IS NOW IN POLICY REPOSITORY
     private function getLicenses($search = null, $creationCheck = True) {
         $licensesDataset = $this->_config['mkdf-policies']['policies-dataset'];
         $licensesKey = $this->_config['mkdf-policies']['policies-key'];
@@ -535,4 +537,5 @@ class PolicyController extends AbstractActionController
         }
         return $this->_repository->getDocuments($licensesDataset,500,$licensesKey,$queryJSON);
     }
+    */
 }

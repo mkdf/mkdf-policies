@@ -19,10 +19,6 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         $this->_repository = $repository;
     }
 
-    public function getLicenseList() {
-
-    }
-
     public function getDatasetUserLicense($datasetUuid, $assignee){
         $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
         if (count($metadataResponse) === 0) {
@@ -81,5 +77,40 @@ class PoliciesRepository implements PoliciesRepositoryInterface
             }
         }
         return $history;
+    }
+
+    public function getLicenses($search = null, $creationCheck = True) {
+        $licensesDataset = $this->_config['mkdf-policies']['policies-dataset'];
+        $licensesKey = $this->_config['mkdf-policies']['policies-key'];
+
+        if ($creationCheck) {
+            $licensesDatasetExists = $this->_repository->getStreamExists($licensesDataset);
+            if (!$licensesDatasetExists) {
+                $this->_repository->createDataset($licensesDataset,$licensesKey);
+            }
+        }
+
+        if (is_null($search)){
+            $queryJSON = '{}';
+        }
+        else {
+            $query = $search;
+            $queryJSON = json_encode($query);
+        }
+        return $this->_repository->getDocuments($licensesDataset,500,$licensesKey,$queryJSON);
+    }
+
+    public function getAllPolicies() {
+        $licenses = $this->getLicenses();
+        $permissionList= [];
+        $obligationList = [];
+        $prohibitionList = [];
+        // TODO - Loop here...
+        $allPolicies = [
+            'permissions' => $permissionList,
+            'obligations' => $obligationList,
+            'prohibitions' => $prohibitionList
+        ];
+        return $allPolicies;
     }
 }
