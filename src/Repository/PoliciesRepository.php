@@ -101,11 +101,31 @@ class PoliciesRepository implements PoliciesRepositoryInterface
     }
 
     public function getAllPolicies() {
-        $licenses = $this->getLicenses();
+        $licenses = json_decode($this->getLicenses(),true);
         $permissionList= [];
         $obligationList = [];
         $prohibitionList = [];
-        // TODO - Loop here...
+        // FIXME - Remove duplicates...
+        foreach ($licenses as $license) {
+            foreach ($license['odrl:permission'] as $permission) {
+                if (!in_array($permission['action'][0], $permissionList))
+                {
+                    array_push($permissionList, $permission['action'][0]);
+                }
+            }
+            foreach ($license['odrl:obligation'] as $obligation) {
+                if (!in_array($obligation['action'][0], $obligationList))
+                {
+                    array_push($obligationList, $obligation['action'][0]);
+                }
+            }
+            foreach ($license['odrl:prohibition'] as $prohibition) {
+                if (!in_array($prohibition['action'][0], $prohibitionList))
+                {
+                    array_push($prohibitionList, $prohibition['action'][0]);
+                }
+            }
+        }
         $allPolicies = [
             'permissions' => $permissionList,
             'obligations' => $obligationList,

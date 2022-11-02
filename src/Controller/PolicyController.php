@@ -236,10 +236,13 @@ class PolicyController extends AbstractActionController
 
         if ($can_view && $can_edit) {
 
+            $allPolicies = $this->_policyRepository->getAllPolicies();
+
             return new ViewModel([
                 'message' => $message,
                 'dataset' => $dataset,
                 'features' => $this->datasetsFeatureManager()->getFeatures($id),
+                'allPolicies' => $allPolicies,
                 'actions' => $actions,
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
@@ -514,28 +517,4 @@ class PolicyController extends AbstractActionController
 
         return $metadata;
     }
-
-    /*
-     * FUNCTION IS NOW IN POLICY REPOSITORY
-    private function getLicenses($search = null, $creationCheck = True) {
-        $licensesDataset = $this->_config['mkdf-policies']['policies-dataset'];
-        $licensesKey = $this->_config['mkdf-policies']['policies-key'];
-
-        if ($creationCheck) {
-            $licensesDatasetExists = $this->_repository->getStreamExists($licensesDataset);
-            if (!$licensesDatasetExists) {
-                $this->_repository->createDataset($licensesDataset,$licensesKey);
-            }
-        }
-
-        if (is_null($search)){
-            $queryJSON = '{}';
-        }
-        else {
-            $query = $search;
-            $queryJSON = json_encode($query);
-        }
-        return $this->_repository->getDocuments($licensesDataset,500,$licensesKey,$queryJSON);
-    }
-    */
 }
