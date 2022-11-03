@@ -1,5 +1,73 @@
 <h1><?= $dataset->title ?></h1>
 <div class="container">
+
+    <!-- Modals -->
+    <div class="modal fade" id="permissionSelectorModal" tabindex="-1" aria-labelledby="permissionSelectorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="permissionSelectorModalLabel">License Permission Policies</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="permissionSelectorModalContent">
+                        <!--Modal content here-->
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+    <div class="modal fade" id="prohibitionSelectorModal" tabindex="-1" aria-labelledby="prohibitionSelectorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="prohibitionSelectorModalLabel">License Prohibition Policies</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="prohibitionSelectorModalContent">
+                        <!--Modal content here-->
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+    <div class="modal fade" id="obligationSelectorModal" tabindex="-1" aria-labelledby="obligationSelectorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="obligationSelectorModalLabel">License Obligation Policies</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="obligationSelectorModalContent">
+                        <!--Modal content here-->
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+
+
+
     <div class="row">
         <div class="col-md-3">
             <?= $this->partial('mkdf/datasets/partial/dataset-features', ['features' => $features, 'dataset_id' => $dataset->id] ) ?>
@@ -93,7 +161,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <h5>Permissions <span class="text-primary">
-                                <a href="#" class="text-primary" data-toggle="modal" data-target="#createModal">
+                                <a href='#' class='text-primary' data-toggle='modal' data-target='#permissionSelectorModal'>
                                     <i class="fas fa-plus-square"></i>
                                 </a>
                             </span></h5>
@@ -126,7 +194,7 @@
                     </div>
                     <div class="col-md-4">
                         <h5>Obligations <span class="text-primary">
-                                <a href="#" class="text-primary" data-toggle="modal" data-target="#createModal">
+                                <a href="#" class="text-primary" data-toggle="modal" data-target="#obligationSelectorModal">
                                     <i class="fas fa-plus-square"></i>
                                 </a>
                             </span></h5>
@@ -152,7 +220,7 @@
                     </div>
                     <div class="col-md-4">
                         <h5>Prohibitions <span class="text-primary">
-                                <a href="#" class="text-primary" data-toggle="modal" data-target="#createModal">
+                                <a href="#" class="text-primary" data-toggle="modal" data-target="#prohibitionSelectorModal">
                                     <i class="fas fa-plus-square"></i>
                                 </a>
                             </span></h5>
@@ -182,9 +250,28 @@
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
 
-
-
         </div>
     </div>
 </div>
 
+<script>
+    function loadPolicies() {
+        allPolicies = <?= json_encode($allPolicies); ?>;
+        return allPolicies;
+    }
+
+    function addPoliciesToModal(policies, modal) {
+        for (i = 0; i < policies.length; i++) {
+            const element = policies[i];
+            $( modal ).append( "<p>"+element+"</p>" );
+        }
+    }
+
+    $(document).ready(function(){
+        allPolicies = loadPolicies();
+        console.log(allPolicies);
+        addPoliciesToModal(allPolicies['permissions'], "#permissionSelectorModalContent");
+        addPoliciesToModal(allPolicies['obligations'], "#obligationSelectorModalContent");
+        addPoliciesToModal(allPolicies['prohibitions'], "#prohibitionSelectorModalContent");
+    });
+</script>
