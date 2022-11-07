@@ -165,31 +165,8 @@
                                     <i class="fas fa-plus-square"></i>
                                 </a>
                             </span></h5>
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                <span class="text-success"><i class="fas fa-check-circle"></i></span>
-                                Private use
-                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
-                            </li>
-                            <li class="list-group-item">
-                                <span class="text-success"><i class="fas fa-check-circle"></i></span>
-                                Distribution
-                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
-                            </li>
-                            <li class="list-group-item">
-                                <span class="text-success"><i class="fas fa-check-circle"></i></span>
-                                Modification
-                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
-                            </li>
+                        <ul class="list-group" id="permissionsListUL">
+
                         </ul>
                     </div>
                     <div class="col-md-4">
@@ -198,24 +175,8 @@
                                     <i class="fas fa-plus-square"></i>
                                 </a>
                             </span></h5>
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                <span class="text-info">
-                                    <i class="fas fa-exclamation-circle"></i></span>
-                                Attribution
-                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
-                            </li>
-                            <li class="list-group-item"><span class="text-info">
-                                    <i class="fas fa-exclamation-circle"></i></span>
-                                Liability
-                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
-                            </li>
+                        <ul class="list-group" id="obligationsListUL">
+
                         </ul>
                     </div>
                     <div class="col-md-4">
@@ -224,28 +185,13 @@
                                     <i class="fas fa-plus-square"></i>
                                 </a>
                             </span></h5>
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                <span class="text-danger"><i class="fas fa-times-circle"></i></span>
-                                Commercial use
-                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
-                            </li>
-                            <li class="list-group-item">
-                                <span class="text-danger"><i class="fas fa-times-circle"></i></span>
-                                Modification
-                                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <span class="text-right"><i class="fas fa-trash-alt"></i></span>
-                            </li>
+                        <ul class="list-group" id="prohibitionsListUL">
+
                         </ul>
                     </div>
                 </div>
                 <hr />
-                <?= var_dump($allPolicies); ?>
+                <!-- <?= var_dump($allPolicies); ?> -->
 
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
@@ -255,23 +201,115 @@
 </div>
 
 <script>
+    var license;
+
+    function initLicense() {
+        license = {
+            "permissions": [],
+            "obligations": [],
+            "prohibitions": []
+        };
+        return license;
+    }
+
+    function addPolicy(action, section) {
+        actionObject = {
+            "action": [action]
+        };
+        license[section].push(actionObject);
+        // Now make the button for adding this policy disabled
+        const buttonName = section+getShortName(action);
+        $('#'+buttonName).prop('disabled', true);
+        updatePoliciesView();
+    }
+
+    function removePolicy(action, section) {
+        foundIndex = -1;
+        // Look for array index of policy action
+        for (i = 0; i < license[section].length; i++) {
+            if (license[section][i].action[0] == action) {
+                foundIndex = i;
+            }
+        }
+        // Remove policy
+        if (foundIndex >= 0) {
+            license[section].splice(foundIndex, 1);
+        }
+        // Re-enable policy add button
+        const buttonName = section+getShortName(action);
+        $('#'+buttonName).prop('disabled', false);
+
+        // Update UI list of policies
+        updatePoliciesView();
+    }
+
     function loadPolicies() {
         allPolicies = <?= json_encode($allPolicies); ?>;
         return allPolicies;
     }
 
-    function addPoliciesToModal(policies, modal) {
-        for (i = 0; i < policies.length; i++) {
-            const element = policies[i];
-            $( modal ).append( "<p>"+element+"</p>" );
+    function getShortName(input) {
+        position = input.lastIndexOf('#');
+        if (position < 0){
+            position = input.lastIndexOf(':');
+        }
+        if (position < 0) {
+            return input;
+        }
+        else {
+            return input.substring(position + 1);
         }
     }
 
+    function addPoliciesToModal(policies, modal, section) {
+        for (i = 0; i < policies.length; i++) {
+            const element = policies[i];
+            var html = '<p><button type="button" class="btn btn-primary" onclick="addPolicy(\''+element+'\', \''+section+'\')" id="'+section+getShortName(element)+'">';
+            html += '<i class="fas fa-plus-square"></i> ' + getShortName(element) + '</button></p>';
+            $( modal ).append( html );
+        }
+    }
+
+    function updatePoliciesView() {
+        html = '';
+        for (i = 0; i < license.permissions.length; i++) {
+            liHtml = '';
+            liHtml += '<li class="list-group-item"> <span class="text-success"><i class="fas fa-check-circle"></i></span> ';
+            liHtml += getShortName(license.permissions[i].action[0]);
+            liHtml += ' <span class="text-right text-danger"><a href="#" onclick="removePolicy(\''+license.permissions[i].action[0]+'\',\'permissions\')">';
+            liHtml += '<i class="fas fa-trash-alt"></i></a></span></li>';
+            html += liHtml;
+        }
+        $('#permissionsListUL').html(html);
+
+        html = '';
+        for (i = 0; i < license.obligations.length; i++) {
+            liHtml = '';
+            liHtml += '<li class="list-group-item"> <span class="text-warning"><i class="fas fa-exclamation-circle"></i></span> ';
+            liHtml += getShortName(license.obligations[i].action[0]);
+            liHtml += ' <span class="text-right"><a href="#" onclick="removePolicy(\''+license.obligations[i].action[0]+'\',\'obligations\')">';
+            liHtml += '<i class="fas fa-trash-alt"></i></a></span></li>';
+            html += liHtml;
+        }
+        $('#obligationsListUL').html(html);
+
+        html = '';
+        for (i = 0; i < license.prohibitions.length; i++) {
+            liHtml = '';
+            liHtml += '<li class="list-group-item"> <span class="text-danger"><i class="fas fa-times-circle"></i></span> ';
+            liHtml += getShortName(license.prohibitions[i].action[0]);
+            liHtml += ' <span class="text-right"><a href="#" onclick="removePolicy(\''+license.prohibitions[i].action[0]+'\',\'prohibitions\')">';
+            liHtml += '<i class="fas fa-trash-alt"></i></a></span></li>';
+            html += liHtml;
+        }
+        $('#prohibitionsListUL').html(html);
+    }
+
     $(document).ready(function(){
-        allPolicies = loadPolicies();
-        console.log(allPolicies);
-        addPoliciesToModal(allPolicies['permissions'], "#permissionSelectorModalContent");
-        addPoliciesToModal(allPolicies['obligations'], "#obligationSelectorModalContent");
-        addPoliciesToModal(allPolicies['prohibitions'], "#prohibitionSelectorModalContent");
+        const allPolicies = loadPolicies();
+        license = initLicense();
+        addPoliciesToModal(allPolicies['permissions'], "#permissionSelectorModalContent", 'permissions');
+        addPoliciesToModal(allPolicies['obligations'], "#obligationSelectorModalContent", 'obligations');
+        addPoliciesToModal(allPolicies['prohibitions'], "#prohibitionSelectorModalContent", 'prohibitions');
     });
 </script>
