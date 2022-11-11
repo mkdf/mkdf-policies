@@ -1,17 +1,38 @@
-<h1>Create new license</h1>
-<?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
-<!-- Token: <?= $token ?> -->
-<p>
-    Are you sure you wish to create this custom license?<br />
-    <em>Please note that this will be added to your list of custom licenses but not automatically applied to the dataset until specifically selected</em>
-    <em>license name</em><br />
-</p>
-<?= $this->partial('mkdf/core/partial/actions', [
-    'buttons'=>[
-        ['type'=>'primary','label'=>'Yes, create this license', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'createconfirm'], 'query' => ['license' => $license, 'userScope' => $userScope, 'assigneeEmail' => $assigneeEmail, 'token' => $token]],
-        ['type'=>'danger','label'=>'No, go back please', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'index']]]
-] ); ?>
 
-<?php
-    var_dump($policies);
+    <h1>Custom license created</h1>
+    <?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
+
+
+<div class="row">
+    <div class="col-md-12">
+
+    License title: <br />
+    <p>
+        This license will now be available to select from the list of available licenses for this dataset. PLease note
+        that the license has not yet been applied, so should be selected and applied in the normal way.
+    </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <button id="saveButton" class="btn btn-primary align-baseline"><i class="fas fa-redo"></i> Return to dataset licenses and polices</button>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h4>License source:</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+
+    <?php
+    print("<pre>");
+    print(json_encode($newLicense,JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    print("</pre>");
 ?>
+    </div>
+</div>

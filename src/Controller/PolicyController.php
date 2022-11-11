@@ -203,6 +203,7 @@ class PolicyController extends AbstractActionController
 
         if ($can_view && $can_edit) {
             $licenses = json_decode($this->_policyRepository->getLicenses());
+            $customLicenses = json_decode($this->_policyRepository->getCustomLicenses($dataset->uuid), True);
 
             return new ViewModel([
                 'message' => $message,
@@ -212,6 +213,7 @@ class PolicyController extends AbstractActionController
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
                 'licenses' => $licenses,
+                'customLicenses' => $customLicenses,
                 'assigner' => $user_email
             ]);
         }
@@ -264,7 +266,6 @@ class PolicyController extends AbstractActionController
         $user_id = $this->currentUser()->getId();
         $user_email = $this->currentUser()->getEmail();
         $id = (int) $this->params()->fromRoute('id', 0);
-        $token = $this->params()->fromQuery('token', null);
         $assigneeEmail = $this->params()->fromQuery('assigneeEmail', null);
 
         $dataset = $this->_dataset_repository->findDataset($id);
@@ -290,52 +291,24 @@ class PolicyController extends AbstractActionController
 
             }
             $policies = $this->processCustomLicenseFormData($data);
+            $newLicense = $this->saveCustomLicense($data, $policies, $dataset->uuid, $id, $user_email);
 
+            //return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+            return new ViewModel([
+                'messages' => $messages,
+                'dataset' => $dataset,
+                'features' => $this->datasetsFeatureManager()->getFeatures($id),
+                'actions' => $actions,
+                'can_edit' => $can_edit,
+                'can_read' => $can_read,
+                'token' => $token,
+                'assigneeEmail' => $assigneeEmail,
+                'data' => $data,
+                'policies' => $policies,
+                'newLicense' => $newLicense,
+                'complete' => true
+            ]);
 
-
-            if (!is_null($token)) {
-                $container = new Container('createconfirm');
-                $valid_token = ($container->createconfirm == $token);
-                if ($valid_token) {  // create license here...
-
-                    $this->flashMessenger()->addMessage('The custom license has been created.');
-                }
-                else {
-                    $this->flashMessenger()->addMessage('Error: Invalid token. The license was not created.');
-                }
-                //return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
-                return new ViewModel([
-                    'messages' => $messages,
-                    'dataset' => $dataset,
-                    'features' => $this->datasetsFeatureManager()->getFeatures($id),
-                    'actions' => $actions,
-                    'can_edit' => $can_edit,
-                    'can_read' => $can_read,
-                    'token' => $token,
-                    'assigneeEmail' => $assigneeEmail,
-                    'data' => $data,
-                    'policies' => $policies,
-                    'complete' => true
-                ]);
-            }
-            else {
-                $token = uniqid(true);
-                $container = new Container('createconfirm');
-                $container->createconfirm = $token;
-                return new ViewModel([
-                    'messages' => $messages,
-                    'dataset' => $dataset,
-                    'features' => $this->datasetsFeatureManager()->getFeatures($id),
-                    'actions' => $actions,
-                    'can_edit' => $can_edit,
-                    'can_read' => $can_read,
-                    'token' => $token,
-                    'assigneeEmail' => $assigneeEmail,
-                    'data' => $data,
-                    'policies' => $policies,
-                    'complete' => false
-                ]);
-            }
         }
         else {
             $this->flashMessenger()->addMessage('You do not have manage rights on this dataset');
@@ -561,9 +534,88 @@ class PolicyController extends AbstractActionController
         }
     }
 
-    private function saveCustomLicense() {
-        
+    // ******************************************************************************************
+    // ******************************************************************************************
+
+    private function saveCustomLicense($data, $policies, $datasetUuid, $datasetId, $user_email) {
+        $licenseBody = [];
+        $licenseBody['@context'] = ["https://spice.kmi.open.ac.uk/context/policyLayer.jsonld", "http://www.w3.org/ns/odrl.jsonld"];
+        $licenseBody['@type'] = 'odrl:policy';
+        $licenseBody['s'] = $data['licenseTitle'];
+        $licenseBody['odrl:uid'] = "";
+        $licenseBody['odrl:profile'] = "";
+        $licenseBody['odrl:target'] = $datasetUuid;
+        $licenseBody['odrl:assigner'] = $user_email;
+        $licenseBody['odrl:assignee'] = "";
+        $licenseBody['schema:title'] = $data['licenseTitle'];
+        $licenseBody['schema:text'] = $data['licenseText'];
+        $licenseBody['active'] = false;
+        $licenseBody['custom']= true;
+        $licenseBody['created-time'] = time();
+        $licenseBody['schema:validFrom'] = "";
+        $licenseBody['schema:validTo'] = "";
+        $licenseBody['odrl:permission'] = [];
+        $licenseBody['odrl:obligation'] = [];
+        $licenseBody['odrl:prohibition'] = [];
+
+        foreach ($policies['permissions'] as $item) {
+            $licenseBody['odrl:permission'][] = $item;
+        }
+        foreach ($policies['obligations'] as $item) {
+            $licenseBody['odrl:obligation'][] = $item;
+        }
+        foreach ($policies['prohibitions'] as $item) {
+            $licenseBody['odrl:prohibition'][] = $item;
+        }
+
+        $emptyPolicy = [
+            'dataset' => [
+                'active' => [],
+                'inactive' => []
+            ],
+            'document' => [
+                'active' => [],
+                'inactive' => []
+            ],
+            'file' => [
+                'active' => [],
+                'inactive' => []
+            ],
+            'custom' => []
+        ];
+
+        //Check that license title doesn't already exist...
+        $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        if (count($metadataResponse) >= 1) {
+            if (isset($metadataResponse[0]['policy'])) {
+                foreach($metadataResponse[0]['policy']['custom'] as $item) {
+                    if($item['schema:title'] == $licenseBody['schema:title']) {
+                        // this already exists
+                        $this->flashMessenger()->addMessage('Error: this custom license title already exists.');
+                        return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id' => $datasetId]);                    }
+                }
+            }
+            else { // no policy data yet within the dataset metadata
+                $metadataResponse[0]['policy'] = $emptyPolicy;
+            }
+        }
+        else { // no metadata for this dataset
+            $metadataResponse[0] = [
+                '_id' => $datasetUuid,
+                'policy' => $emptyPolicy
+            ];
+        }
+
+        //Push license to dataset metadata...
+        $metadataResponse[0]['policy']['custom'][] = $licenseBody;
+        $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($metadataResponse[0]), $datasetUuid);
+
+        //return license ODRL source...
+        return $licenseBody;
     }
+
+    // ******************************************************************************************
+    // ******************************************************************************************
 
     private function addLicenseToMetadata($datasetUuid, $licenseId, $assigner, $assignee, $metadata) {
         if (!isset($metadata['policy'])) {

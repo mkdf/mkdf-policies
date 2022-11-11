@@ -100,6 +100,20 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         return $this->_repository->getDocuments($licensesDataset,500,$licensesKey,$queryJSON);
     }
 
+    public function getCustomLicenses($datasetUuid, $search = null) {
+        $metadataDataset = $this->_config['mkdf-stream']['dataset-metadata'];
+        if (is_null($search)){
+            $queryJSON = '{}';
+        }
+        $metadataResponse = json_decode($this->_repository->getDocument($metadataDataset, $datasetUuid), True);
+        if (count($metadataResponse) >= 1) {
+            //print_r(json_encode($metadataResponse[0]['policy']['custom'], JSON_UNESCAPED_SLASHES));
+            return json_encode($metadataResponse[0]['policy']['custom'], JSON_UNESCAPED_SLASHES);
+        }
+
+        return null;
+    }
+
     public function getAllPolicies() {
         $licenses = json_decode($this->getLicenses(),true);
         $permissionList= [];

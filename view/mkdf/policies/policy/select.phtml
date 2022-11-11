@@ -85,7 +85,14 @@
                         print("<option value='".$value->{'odrl:uid'}."'>".$value->{'schema:title'} . " </option>\n");
                     }
                 ?>
+                <?php
+                //print_r($licenses)
+                foreach ($customLicenses as $value) {
+                    print("<option value='".$value['schema:title']."'>".$value['schema:title']. " </option>\n");
+                }
+                ?>
                 </select>
+
                 <hr />
                 <div class="row">
                     <div class="col-md-4">
