@@ -80,58 +80,14 @@
             -->
             <h4>Create a new license</h4>
 
-
-            <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="createModalLabel">Policy creation</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <h6>Policy</h6>
-                            <p>Policy creation form here...</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="viewModalLabel">Policy view</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <h6>Policy</h6>
-                            <p>Policy attributes, constraints and body here, including editing options</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <form>
+            <form method="post" id="mainform" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'createconfirm'],[]); ?>">
                 <div class="form-group">
                     <label for="licenseTitle">License title</label>
-                    <input type="text" class="form-control" id="licenseTitle"  placeholder="license title">
+                    <input type="text" class="form-control" id="licenseTitle" name="licenseTitle" placeholder="license title">
                 </div>
                 <div class="form-group">
                     <label for="licenseText">License text body</label>
-                    <textarea class="form-control" id="licenseText" rows="4"></textarea>
+                    <textarea class="form-control" id="licenseText" name="licenseText" rows="4"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -139,13 +95,7 @@
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="assignee" id="assigneeAnon" value="assigneeAnon" checked>
                     <label class="form-check-label" for="assigneeAnon">
-                        Anonymous users
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="assignee" id="assigneeLoggedIn" value="assigneeLoggedIn">
-                    <label class="form-check-label" for="assigneeLoggedIn">
-                        Logged in users
+                        All users
                     </label>
                 </div>
                 <div class="form-check">
@@ -155,7 +105,7 @@
                     </label>
                 </div>
                     <!-- <label for="namedAssignee">Named user email address</label> -->
-                    <input type="text" class="form-control" id="namedAssignee"  placeholder="email address">
+                    <input type="text" class="form-control" id="namedAssignee" name="namedAssignee" placeholder="email address">
                 </div>
 
                 <div class="row">
@@ -193,7 +143,10 @@
                 <hr />
                 <!-- <?= var_dump($allPolicies); ?> -->
 
-                <button type="submit" class="btn btn-primary">Save</button>
+                <!-- <button type="submit" class="btn btn-primary">Save</button> -->
+                <input type="hidden" id="policies" name="policies" value="">
+                <button id="saveButton" class="btn btn-primary btn-sm align-baseline"><i class="fas fa-play"></i> Save</button>
+
             </form>
 
         </div>
@@ -311,5 +264,25 @@
         addPoliciesToModal(allPolicies['permissions'], "#permissionSelectorModalContent", 'permissions');
         addPoliciesToModal(allPolicies['obligations'], "#obligationSelectorModalContent", 'obligations');
         addPoliciesToModal(allPolicies['prohibitions'], "#prohibitionSelectorModalContent", 'prohibitions');
+
+        var data = {
+            attrib1: "foo",
+            attrib2: "bar"
+        };
+        /*
+        $('#mainform').submit(function(e) {
+            e.preventDefault();
+            //e.stopPropagation();
+            $.post(this.action, data);
+            //return false;
+        });
+        */
+        $("#saveButton").on("click", function () {
+            //$('#query').val(query);
+            $("#policies").val(JSON.stringify(license));
+            $("#mainform").submit();
+            e.preventDefault();
+        });
+
     });
 </script>

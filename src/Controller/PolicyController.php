@@ -254,6 +254,105 @@ class PolicyController extends AbstractActionController
         }
     }
 
+    public function createconfirmAction() {
+        // Check credentials
+        // If no token supplied, present confirm page
+        // If token, process
+        // Build license from custom policy data
+        // Store in custom library for future use
+
+        $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
+        $id = (int) $this->params()->fromRoute('id', 0);
+        $token = $this->params()->fromQuery('token', null);
+        $assigneeEmail = $this->params()->fromQuery('assigneeEmail', null);
+
+        $dataset = $this->_dataset_repository->findDataset($id);
+        //$permissions = $this->_repository->findDatasetPermissions($id);
+        $messages = [];
+        $flashMessenger = $this->flashMessenger();
+        if ($flashMessenger->hasMessages()) {
+            foreach($flashMessenger->getMessages() as $flashMessage) {
+                $messages[] = [
+                    'type' => 'warning',
+                    'message' => $flashMessage
+                ];
+            }
+        }
+        $actions = [];
+        $can_view = $this->_permissionManager->canView($dataset,$user_id);
+        $can_read = $this->_permissionManager->canRead($dataset,$user_id);
+        $can_edit = $this->_permissionManager->canEdit($dataset,$user_id);
+
+        if ($can_view && $can_edit) {
+            if($this->getRequest()->isPost()) {
+                $data = $this->params()->fromPost();
+
+            }
+            $policies = $this->processCustomLicenseFormData($data);
+
+
+
+            if (!is_null($token)) {
+                $container = new Container('createconfirm');
+                $valid_token = ($container->createconfirm == $token);
+                if ($valid_token) {  // create license here...
+
+                    $this->flashMessenger()->addMessage('The custom license has been created.');
+                }
+                else {
+                    $this->flashMessenger()->addMessage('Error: Invalid token. The license was not created.');
+                }
+                //return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+                return new ViewModel([
+                    'messages' => $messages,
+                    'dataset' => $dataset,
+                    'features' => $this->datasetsFeatureManager()->getFeatures($id),
+                    'actions' => $actions,
+                    'can_edit' => $can_edit,
+                    'can_read' => $can_read,
+                    'token' => $token,
+                    'assigneeEmail' => $assigneeEmail,
+                    'data' => $data,
+                    'policies' => $policies,
+                    'complete' => true
+                ]);
+            }
+            else {
+                $token = uniqid(true);
+                $container = new Container('createconfirm');
+                $container->createconfirm = $token;
+                return new ViewModel([
+                    'messages' => $messages,
+                    'dataset' => $dataset,
+                    'features' => $this->datasetsFeatureManager()->getFeatures($id),
+                    'actions' => $actions,
+                    'can_edit' => $can_edit,
+                    'can_read' => $can_read,
+                    'token' => $token,
+                    'assigneeEmail' => $assigneeEmail,
+                    'data' => $data,
+                    'policies' => $policies,
+                    'complete' => false
+                ]);
+            }
+        }
+        else {
+            $this->flashMessenger()->addMessage('You do not have manage rights on this dataset');
+            return $this->redirect()->toRoute('dataset', ['action'=>'details', 'id'=>$dataset->id]);
+        }
+    }
+
+    private function processCustomLicenseFormData($formData) {
+        $dataObject = [
+            'licenseTitle' => $formData['licenseTitle'],
+            'licenseText' => $formData['licenseText'],
+            'policies' => $formData['policies']
+        ];
+        $policies = json_decode($formData['policies'], true);
+        return $policies;
+    }
+
     public function libraryAction() {
         $uid = $this->params()->fromRoute('uid', null);
         $search = null;
@@ -462,6 +561,10 @@ class PolicyController extends AbstractActionController
         }
     }
 
+    private function saveCustomLicense() {
+        
+    }
+
     private function addLicenseToMetadata($datasetUuid, $licenseId, $assigner, $assignee, $metadata) {
         if (!isset($metadata['policy'])) {
             $metadata['policy'] =
@@ -477,7 +580,8 @@ class PolicyController extends AbstractActionController
                     'file' => [
                         'active' => [],
                         'inactive' => []
-                    ]
+                    ],
+                    'custom' => []
                 ];
         }
 
