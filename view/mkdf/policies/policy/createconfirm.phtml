@@ -6,9 +6,9 @@
 <div class="row">
     <div class="col-md-12">
 
-    License title: <br />
+    License title: <em><?= $newLicense['schema:title'] ?></em><br />
     <p>
-        This license will now be available to select from the list of available licenses for this dataset. PLease note
+        This license will now be available to select from the list of available licenses for this dataset. Please note
         that the license has not yet been applied, so should be selected and applied in the normal way.
     </p>
     </div>
@@ -16,7 +16,10 @@
 
 <div class="row">
     <div class="col-md-12">
-        <button id="saveButton" class="btn btn-primary align-baseline"><i class="fas fa-redo"></i> Return to dataset licenses and polices</button>
+        <!-- <button id="saveButton" class="btn btn-primary align-baseline"></button> -->
+        <a class="btn btn-primary" href="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>" role="button">
+            <i class="fas fa-redo"></i> Return to dataset licenses and polices
+        </a>
         <hr />
     </div>
 </div>

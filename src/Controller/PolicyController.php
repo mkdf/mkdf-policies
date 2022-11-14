@@ -143,7 +143,7 @@ class PolicyController extends AbstractActionController
                         'class' => '',
                         'type' => 'warning',
                         'icon' => 'view',
-                        'label' => 'Select and apply a standard license',
+                        'label' => 'Select and apply a license',
                         'target' => 'dataset-policies',
                         'params' => [
                             'action' => 'select',
