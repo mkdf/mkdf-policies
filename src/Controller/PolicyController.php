@@ -258,8 +258,6 @@ class PolicyController extends AbstractActionController
 
     public function createconfirmAction() {
         // Check credentials
-        // If no token supplied, present confirm page
-        // If token, process
         // Build license from custom policy data
         // Store in custom library for future use
 
@@ -301,7 +299,7 @@ class PolicyController extends AbstractActionController
                 'actions' => $actions,
                 'can_edit' => $can_edit,
                 'can_read' => $can_read,
-                'token' => $token,
+                //'token' => $token,
                 'assigneeEmail' => $assigneeEmail,
                 'data' => $data,
                 'policies' => $policies,
@@ -326,6 +324,14 @@ class PolicyController extends AbstractActionController
         return $policies;
     }
 
+    public function customAction() {
+        $id = (int) $this->params()->fromRoute('id', 0);
+        $dataset = $this->_dataset_repository->findDataset($id);
+        $licenseId = $this->params()->fromQuery('license', null);
+        $licenseBody = json_decode($this->_policyRepository->getCustomLicenses($dataset->uuid, $licenseId),True)[0];
+        return new JsonModel([$licenseBody]);
+    }
+
     public function libraryAction() {
         $uid = $this->params()->fromRoute('uid', null);
         $search = null;
@@ -347,6 +353,12 @@ class PolicyController extends AbstractActionController
         $userScope = $this->params()->fromQuery('userScope', null);
         $licenseScope = $this->params()->fromQuery('licenseScope', null);
         $assigneeEmail = $this->params()->fromQuery('assigneeEmail', null);
+
+        $custom = false;
+        if (substr($license, 0, 8) == '-custom-'){
+            $license = substr($license, 8);
+            $custom = true;
+        }
 
         $dataset = $this->_dataset_repository->findDataset($id);
         //$permissions = $this->_repository->findDatasetPermissions($id);
@@ -394,6 +406,9 @@ class PolicyController extends AbstractActionController
                 $container = new Container('apply_license');
                 $valid_token = ($container->apply_token == $token);
                 if ($valid_token) {  // Apply license here...
+                    // "-custom-" won't be included in the license name after the confirm/token page is submitted, but
+                    // it will be included as a URL param, so get it from there instead.
+                    $retrieveCustom = $this->params()->fromQuery('custom', false);
                     //Retrieve license
                     $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $dataset->uuid), True);
                     $metadata = [];
@@ -404,7 +419,7 @@ class PolicyController extends AbstractActionController
                         //the metadata has no '_id', so create it
                         $metadata['_id'] = $dataset->uuid;
                     }
-                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $user_email, $assigneeEmail, $metadata);
+                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $retrieveCustom, $user_email, $assigneeEmail, $metadata);
                     $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
                     $this->flashMessenger()->addMessage('The license has been applied to the dataset');
                 }
@@ -428,6 +443,7 @@ class PolicyController extends AbstractActionController
                     'license' => $license,
                     'userScope' => $userScope,
                     'assigneeEmail' => $assigneeEmail,
+                    'custom' => $custom
                 ]);
             }
         }
@@ -538,11 +554,13 @@ class PolicyController extends AbstractActionController
     // ******************************************************************************************
 
     private function saveCustomLicense($data, $policies, $datasetUuid, $datasetId, $user_email) {
+        $contractedTitle = str_replace(' ', '', $data['licenseTitle']);
+
         $licenseBody = [];
         $licenseBody['@context'] = ["https://spice.kmi.open.ac.uk/context/policyLayer.jsonld", "http://www.w3.org/ns/odrl.jsonld"];
         $licenseBody['@type'] = 'odrl:policy';
-        $licenseBody['s'] = $data['licenseTitle'];
-        $licenseBody['odrl:uid'] = "";
+        $licenseBody['s'] = $datasetUuid . '-' . $contractedTitle;
+        $licenseBody['odrl:uid'] = $datasetUuid . '-' . $contractedTitle;
         $licenseBody['odrl:profile'] = "";
         $licenseBody['odrl:target'] = $datasetUuid;
         $licenseBody['odrl:assigner'] = $user_email;
@@ -617,7 +635,7 @@ class PolicyController extends AbstractActionController
     // ******************************************************************************************
     // ******************************************************************************************
 
-    private function addLicenseToMetadata($datasetUuid, $licenseId, $assigner, $assignee, $metadata) {
+    private function addLicenseToMetadata($datasetUuid, $licenseId, $custom, $assigner, $assignee, $metadata) {
         if (!isset($metadata['policy'])) {
             $metadata['policy'] =
                 [
@@ -661,7 +679,12 @@ class PolicyController extends AbstractActionController
         $search = [
             '_id' => $licenseId
         ];
-        $licenseBody = json_decode($this->_policyRepository->getLicenses($search, False),True)[0];
+        if (!$custom) {
+            $licenseBody = json_decode($this->_policyRepository->getLicenses($search, False),True)[0];
+        }
+        else {
+            $licenseBody = json_decode($this->_policyRepository->getCustomLicenses($datasetUuid, $licenseId),True)[0];
+        }
         $licenseBody['odrl:assignee'] = $assignee;
         $licenseBody['odrl:assigner'] = $assigner;
         $licenseBody['odrl:target'] = $datasetUuid; // FIXME - dataset URI here

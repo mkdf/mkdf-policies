@@ -100,15 +100,27 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         return $this->_repository->getDocuments($licensesDataset,500,$licensesKey,$queryJSON);
     }
 
-    public function getCustomLicenses($datasetUuid, $search = null) {
+    public function getCustomLicenses($datasetUuid, $licenseId = null) {
         $metadataDataset = $this->_config['mkdf-stream']['dataset-metadata'];
-        if (is_null($search)){
-            $queryJSON = '{}';
-        }
+
         $metadataResponse = json_decode($this->_repository->getDocument($metadataDataset, $datasetUuid), True);
         if (count($metadataResponse) >= 1) {
-            //print_r(json_encode($metadataResponse[0]['policy']['custom'], JSON_UNESCAPED_SLASHES));
-            return json_encode($metadataResponse[0]['policy']['custom'], JSON_UNESCAPED_SLASHES);
+            if (is_null($licenseId)){
+                return json_encode($metadataResponse[0]['policy']['custom'], JSON_UNESCAPED_SLASHES);
+            }
+            else {
+                //var_dump($metadataResponse[0]['policy']['custom']);
+                // Look through the custom policies and only return a single one...
+                foreach ($metadataResponse[0]['policy']['custom'] as $singleItem) {
+                    $contractedTitle = str_replace(' ', '', $licenseId);
+                    $uid = $datasetUuid . '-' . $contractedTitle;
+                    if ($singleItem['odrl:uid'] == $uid) {
+                        //return as a single item array for consistency with return format of function that returns standard licenses
+                        return json_encode([$singleItem], JSON_UNESCAPED_SLASHES);
+                    }
+                }
+            }
+
         }
 
         return null;

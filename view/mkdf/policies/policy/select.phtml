@@ -79,18 +79,24 @@
             <form id="selectLicense" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'apply'],[]); ?>">
 
                 <select class="form-control" id="licenseSelect" name="license" onchange="loadLicense();">
+                    <option disabled>──────────</option>
+                    <option disabled>Custom licenses</option>
+                    <option disabled>──────────</option>
+
+                    <?php
+                    foreach ($customLicenses as $value) {
+                    print("<option value='-custom-".$value['schema:title']."'>".$value['schema:title']. " </option>\n");
+                }
+                ?>
+                    <option disabled>──────────</option>
+                    <option disabled>Standard licenses</option>
+                    <option disabled>──────────</option>
+
                 <?php
                     //print_r($licenses)
                     foreach ($licenses as $value) {
                         print("<option value='".$value->{'odrl:uid'}."'>".$value->{'schema:title'} . " </option>\n");
                     }
-                ?>
-                    <option disabled>──────────</option>
-                <?php
-                //print_r($licenses)
-                foreach ($customLicenses as $value) {
-                    print("<option value='".$value['schema:title']."'>".$value['schema:title']. " </option>\n");
-                }
                 ?>
                 </select>
 
@@ -136,6 +142,7 @@
                         </div>
                     </div>
                     <div class="col-md-4">
+                        <input type="hidden" name="datasetId" id="datasetId" value="<?= $dataset->id ?>">
                         <button type="submit" class="btn btn-primary"><i class="fas fa-plus-square"></i> Apply license</button>
                     </div>
                 </div>
@@ -227,11 +234,27 @@
 <script>
     function loadLicense() {
         var license = document.getElementById("licenseSelect").value;
+        var datasetId = document.getElementById("datasetId").value;
         $("#permissionList").empty();
         $("#obligationList").empty();
         $("#prohibitionList").empty();
-        document.getElementById("demo").innerHTML = "LOADING: " + license + "...";
-        $.getJSON("/policies/" + license, function(result){
+        // Check if it's a standard library license or a dataset-specific custom license...
+        var custom = false;
+        var url;
+        //echo();
+        if (license.substring(0,8) == "-custom-") {
+            custom = true;
+            licenseName = license.substring(8);
+            url = "/dataset/policies/custom/" + datasetId + "?license=" + licenseName;
+        }
+        else {
+            licenseName = license;
+            url = "/policies/" + license;
+        }
+
+        document.getElementById("demo").innerHTML = "LOADING: " + licenseName + "...";
+        $.getJSON(url, function(result){
+            console.log(result);
             document.getElementById("demo").innerHTML = JSON.stringify(result[0], null, 2);
             renderPermissions(result[0]['odrl:permission']);
             renderObligations(result[0]['odrl:obligation']);
@@ -245,7 +268,7 @@
     }
 
     function renderPermissions(permissions) {
-        console.log(permissions);
+        //console.log(permissions);
         $("#permissionList").empty();
         if (Array.isArray(permissions)) {
             modalText = '';
