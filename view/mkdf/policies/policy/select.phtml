@@ -109,37 +109,43 @@
                             <label class="form-check-label" for="licenseScopeDataset">
                                 Entire dataset
                             </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeJson" value="json" disabled>
+                            <br /><br />
+
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeJson" value="json" >
                             <label class="form-check-label" for="licenseScopeJson">
                                 Individual JSON document
                             </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeFile" value="file" disabled>
+                            <br />
+                            <input type="text" class="form-control" name="jsondoc" id="jsondoc" placeholder="JSON doc id">
+                            <br />
+
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeFile" value="file" >
                             <label class="form-check-label" for="licenseScopeFile">
                                 Individual file
                             </label>
+                            <br />
+                            <input type="text" class="form-control" name="filename" id="filename" placeholder="filename">
+
                         </div>
+
                     </div>
                     <div class="col-md-4">
-                        <h6>License applies to:</h6>
+                        <h6>License assignee:</h6>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="userScope" id="userScopeAll" value="all" checked>
                             <label class="form-check-label" for="userScopeAll">
                                 All users
                             </label>
-                        </div>
-                        <div class="form-check">
+                            <br /><br />
                             <input class="form-check-input" type="radio" name="userScope" id="userScopeNamedUser" value="namedUser">
                             <label class="form-check-label" for="exampleuserScopeNamedUserRadios2">
                                 Individual user
                             </label>
-                        </div>
-                        <div class="form-group">
+                            <br />
                             <input type="email" class="form-control" name="assigneeEmail" id="assigneeEmail" placeholder="Enter user's email">
+
                         </div>
+
                     </div>
                     <div class="col-md-4">
                         <input type="hidden" name="datasetId" id="datasetId" value="<?= $dataset->id ?>">

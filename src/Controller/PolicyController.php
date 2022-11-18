@@ -3,6 +3,8 @@ namespace MKDF\Policies\Controller;
 
 use MKDF\Policies\Repository\PoliciesRepositoryInterface;
 use MKDF\Policies\Repository\PoliciesRepository;
+use MKDF\File\Repository\MKDFFileRepositoryInterface;
+use MKDF\File\Repository\MKDFFileRepository;
 use MKDF\Datasets\Repository\MKDFDatasetRepositoryInterface;
 use MKDF\Datasets\Service\DatasetPermissionManager;
 use MKDF\Datasets\Service\DatasetPermissionManagerInterface;
@@ -20,15 +22,17 @@ class PolicyController extends AbstractActionController
     private $_repository;
     private $_policyRepository;
     private $_dataset_repository;
+    private $_fileRepository;
     private $_permissionManager;
 
-    public function __construct(PoliciesRepositoryInterface $policyRepository, MKDFStreamRepositoryInterface $repository, MKDFDatasetRepositoryInterface $datasetRepository, DatasetPermissionManager $permissionManager, array $config, $viewRenderer)
+    public function __construct(PoliciesRepositoryInterface $policyRepository, MKDFStreamRepositoryInterface $repository, MKDFDatasetRepositoryInterface $datasetRepository, MKDFFileRepositoryInterface $fileRepository, DatasetPermissionManager $permissionManager, array $config, $viewRenderer)
     {
         $this->_config = $config;
         $this->viewRenderer = $viewRenderer;
         $this->_repository = $repository;
         $this->_policyRepository = $policyRepository;
         $this->_dataset_repository = $datasetRepository;
+        $this->_fileRepository = $fileRepository;
         $this->_permissionManager = $permissionManager;
     }
 
@@ -352,6 +356,8 @@ class PolicyController extends AbstractActionController
         $license = $this->params()->fromQuery('license', null);
         $userScope = $this->params()->fromQuery('userScope', null);
         $licenseScope = $this->params()->fromQuery('licenseScope', null);
+        $jsonDoc = $this->params()->fromQuery('jsondoc', null);
+        $filename = $this->params()->fromQuery('filename', null);
         $assigneeEmail = $this->params()->fromQuery('assigneeEmail', null);
 
         $custom = false;
@@ -384,6 +390,39 @@ class PolicyController extends AbstractActionController
             if (is_null($license)) {
                 $this->flashMessenger()->addMessage('Error: No license specified');
                 return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+            }
+
+            // If licenseScope is resource-specific, check the supplied docId/filename is valid
+            switch ($licenseScope) {
+                case 'json':
+                    // Check json doc ID exists
+                    if (is_null($jsonDoc) || ($jsonDoc == ""))
+                    {
+                        $this->flashMessenger()->addMessage('Error: no JSON document ID specified');
+                        return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+                    }
+                    if (!$this->checkLicenseScope($dataset->uuid, $licenseScope, $jsonDoc)) {
+                        $this->flashMessenger()->addMessage('Error: unable to locate JSON document ID');
+                        return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+                    }
+                    $resourceId = $jsonDoc;
+                    break;
+                case 'file':
+                    if (is_null($filename) || ($filename == ""))
+                    {
+                        $this->flashMessenger()->addMessage('Error: No filename specified');
+                        return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+                    }
+                    // Check filename exists
+                    if (!$this->checkLicenseScope($dataset->uuid, $licenseScope, $filename)) {
+                        $this->flashMessenger()->addMessage('Error: unable to locate file');
+                        return $this->redirect()->toRoute('dataset-policies', ['action'=>'index', 'id'=>$dataset->id]);
+                    }
+                    $resourceId = $filename;
+                    break;
+                default:
+                    $licenseScope = 'dataset';
+                    $resourceId = null;
             }
 
             // If applying license to a single user, check email address is a valid user before getting to the token stage
@@ -419,7 +458,7 @@ class PolicyController extends AbstractActionController
                         //the metadata has no '_id', so create it
                         $metadata['_id'] = $dataset->uuid;
                     }
-                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $retrieveCustom, $user_email, $assigneeEmail, $metadata);
+                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $retrieveCustom, $user_email, $assigneeEmail, $licenseScope, $resourceId, $metadata);
                     $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
                     $this->flashMessenger()->addMessage('The license has been applied to the dataset');
                 }
@@ -441,6 +480,9 @@ class PolicyController extends AbstractActionController
                     'can_read' => $can_read,
                     'token' => $token,
                     'license' => $license,
+                    'licenseScope' => $licenseScope,
+                    'jsonDoc' => $jsonDoc,
+                    'filename' => $filename,
                     'userScope' => $userScope,
                     'assigneeEmail' => $assigneeEmail,
                     'custom' => $custom
@@ -453,6 +495,34 @@ class PolicyController extends AbstractActionController
         }
     }
 
+
+    // If the license scope is an individual jsondoc or file (rather than the entire dataset), check that
+    // the specified jsondoc or file actually exists within the dataset
+    private function checkLicenseScope($datasetUuid, $licenseScope, $resourceId) {
+        switch ($licenseScope) {
+            case "json":
+                $response = json_decode($this->_repository->getDocument($datasetUuid, $resourceId), True);
+                if (count($response) >= 1) {
+                    return true;
+                }
+                break;
+            case "file":
+                $response = $this->_fileRepository->findDatasetFiles($datasetUuid, null);
+                foreach ($response as $fileItem) {
+                    if ($fileItem['filenameOriginal'] == $resourceId) {
+                        return true;
+                    }
+                }
+                break;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+
+
+    // TODO - This function isnt active yet.
     public function deleteAction() {
         $user_id = $this->currentUser()->getId();
         $user_email = $this->currentUser()->getEmail();
@@ -511,7 +581,7 @@ class PolicyController extends AbstractActionController
                     $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $dataset->uuid), True);
                     $metadata = [];
                     if (count($metadataResponse) < 1) {
-                        $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
+                        $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($metadata), $metadata['_id']);
                         $this->flashMessenger()->addMessage('Error: Dataset metadata does not exist');
                     }
                     else {
@@ -635,7 +705,7 @@ class PolicyController extends AbstractActionController
     // ******************************************************************************************
     // ******************************************************************************************
 
-    private function addLicenseToMetadata($datasetUuid, $licenseId, $custom, $assigner, $assignee, $metadata) {
+    private function addLicenseToMetadata($datasetUuid, $licenseId, $custom, $assigner, $assignee, $licenseScope, $resourceId, $metadata) {
         if (!isset($metadata['policy'])) {
             $metadata['policy'] =
                 [
@@ -654,11 +724,21 @@ class PolicyController extends AbstractActionController
                     'custom' => []
                 ];
         }
+        switch ($licenseScope) {
+            case 'json':
+                $scope = 'document';
+                break;
+            case 'file':
+                $scope = 'file';
+                break;
+            default:
+                $scope = 'dataset';
+        }
 
         $licenseReplaced = False;
         $nowTime = time();
         $keysToRemove = [];
-        foreach ($metadata['policy']['dataset']['active'] as $key => $item) {
+        foreach ($metadata['policy'][$scope]['active'] as $key => $item) {
             if (isset($item)) {
                 if (isset($item['odrl:assignee']) && isset($item['active'])) {
                     if ($item['odrl:assignee'] == $assignee && $item['active']) {
@@ -666,7 +746,7 @@ class PolicyController extends AbstractActionController
                         $item['active'] = False;
                         $item['modified-time'] = $nowTime;
                         $item['schema:validUntil'] = $nowTime;
-                        array_unshift($metadata['policy']['dataset']['inactive'], $item);
+                        array_unshift($metadata['policy'][$scope]['inactive'], $item);
                         array_unshift($keysToRemove, $key);
                         $licenseReplaced = True;
                     }
@@ -674,7 +754,7 @@ class PolicyController extends AbstractActionController
             }
         }
         foreach ($keysToRemove as $removeKey) {
-            array_splice($metadata['policy']['dataset']['active'], $removeKey, 1);
+            array_splice($metadata['policy'][$scope]['active'], $removeKey, 1);
         }
         $search = [
             '_id' => $licenseId
@@ -688,11 +768,12 @@ class PolicyController extends AbstractActionController
         $licenseBody['odrl:assignee'] = $assignee;
         $licenseBody['odrl:assigner'] = $assigner;
         $licenseBody['odrl:target'] = $datasetUuid; // FIXME - dataset URI here
+        $licenseBody['resourceID'] = $resourceId;
         $licenseBody['active'] = True;
         $licenseBody['created-time'] = $nowTime;
         $licenseBody['schema:validFrom'] = $nowTime;
         $licenseBody['schema:validUntil'] = 7500000000; // 185 years away
-        array_unshift($metadata['policy']['dataset']['active'], $licenseBody);
+        array_unshift($metadata['policy'][$scope]['active'], $licenseBody);
 
         return $metadata;
     }
