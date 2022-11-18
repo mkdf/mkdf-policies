@@ -460,7 +460,17 @@ class PolicyController extends AbstractActionController
                     }
                     $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $license, $retrieveCustom, $user_email, $assigneeEmail, $licenseScope, $resourceId, $metadata);
                     $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
-                    $this->flashMessenger()->addMessage('The license has been applied to the dataset');
+                    switch ($licenseScope) {
+                        case 'json':
+                            $scopeText = "JSON document: " . $resourceId;
+                            break;
+                        case 'file':
+                            $scopeText = "file: " . $resourceId;
+                            break;
+                        default:
+                            $scopeText = "dataset";
+                    }
+                    $this->flashMessenger()->addMessage('The license has been applied to the '. $scopeText);
                 }
                 else {
                     $this->flashMessenger()->addMessage('Error: Invalid token. The license was not applied.');
@@ -740,9 +750,11 @@ class PolicyController extends AbstractActionController
         $keysToRemove = [];
         foreach ($metadata['policy'][$scope]['active'] as $key => $item) {
             if (isset($item)) {
+                if (!isset($item['resourceID'])) {
+                    $item['resourceID'] = null;
+                }
                 if (isset($item['odrl:assignee']) && isset($item['active'])) {
-                    if ($item['odrl:assignee'] == $assignee && $item['active']) {
-                        // TODO - CHECK LICENSE SCHEDULING (from-to)
+                    if ($item['odrl:assignee'] == $assignee && $item['active'] && $item['resourceID'] == $resourceId) {
                         $item['active'] = False;
                         $item['modified-time'] = $nowTime;
                         $item['schema:validUntil'] = $nowTime;
