@@ -1,5 +1,107 @@
 <h1><?= $dataset->title ?></h1>
 <div class="container">
+
+    <!-- Modals -->
+    <div class="modal fade" id="licenseScopeModal" tabindex="-1" aria-labelledby="licenseScopeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="selectScope" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="licenseScopeModalLabel">Change License Scope</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="licenseScopeModalContent">
+                    <?php
+                    $licenseScopeOptions = ['dataset', 'jsondoc', 'file']
+                    ?>
+                    <select class="form-control" id="licensescope" name="licensescope">
+                        <?php foreach($licenseScopeOptions as $licenseScopeItem): ?>
+                            <?php $selected = ($licenseScopeItem == $licenseScope ? "selected" : ""); ?>
+                            <option value='<?= $licenseScopeItem ?>' <?= $selected ?>><?= $licenseScopeItem ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                        <em>Note: License assignee and  target resource selection will be cleared</em>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reload</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+    <div class="modal fade" id="assigneeModal" tabindex="-1" aria-labelledby="assigneeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="selectAssignee" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
+                    <input type="hidden" name="licensescope" id="licensescope" value="<?= $licenseScope ?>">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assigneeModalLabel">Change License Assignee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="assigneeModalContent">
+                    <select class="form-control" id="assignee" name="assignee">
+                        <?php foreach($assigneeList as $assigneeListItem): ?>
+                            <?php $selected = ($assigneeListItem == $assignee ? "selected" : ""); ?>
+                            <option value='<?= $assigneeListItem ?>' <?= $selected ?>><?= $assigneeListItem ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                        <em>Note: License target resource selection will be cleared</em>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reload</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+    <div class="modal fade" id="resourceModal" tabindex="-1" aria-labelledby="resourceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="selectResource" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
+                    <input type="hidden" name="licensescope" id="licensescope" value="<?= $licenseScope ?>">
+                    <input type="hidden" name="assignee" id="assignee" value="<?= $assignee ?>">
+
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="resourceModalLabel">Change License target resource</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="resourceModalContent">
+                    <select class="form-control" id="resourceid" name="resourceid">
+                        <?php
+
+                        ?>
+                        <?php foreach($resourceList as $resourceListItem): ?>
+                            <?php $selected = ($resourceListItem == $resourceId ? "selected" : ""); ?>
+                            <option value='<?= $resourceListItem ?>' <?= $selected ?>><?= $resourceListItem ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reload</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+
     <div class="row">
         <div class="col-md-3">
             <?= $this->partial('mkdf/datasets/partial/dataset-features', ['features' => $features, 'dataset_id' => $dataset->id] ) ?>
@@ -14,46 +116,48 @@
             -->
             <br />
             <br />
-            <!--
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link btn-light" href="">Dataset</a>
-                </li>
 
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link btn-secondary" href="">JSON documents</a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link btn-secondary" href="">Files</a>
-                </li>
 
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link btn-secondary" href="">Users & groups</a>
-                </li>
-            </ul>
-            -->
 
-            <h6>License assignee: <?= $assignee ?></h6>
-            <form id="selectLicense" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
-            View assignee: <br />
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-12">
+                    <h6>
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#licenseScopeModal">
+                        <i class="fas fa-exchange-alt"></i> Change
+                    </button>
 
-                    <select class="form-control" id="assignee" name="assignee" onchange="loadLicense();">
-                        <?php foreach($assigneeList as $assigneeListItem): ?>
-                            <?php $selected = ($assigneeListItem == $assignee ? "selected" : ""); ?>
-                            <option value='<?= $assigneeListItem ?>' <?= $selected ?>><?= $assigneeListItem ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                        &nbsp;&nbsp;License scope: <em><?= $licenseScope ?></em></h6>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-redo"></i> Reload</button>
+
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <h6>
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#assigneeModal">
+                        <i class="fas fa-exchange-alt"></i> Change
+                    </button>
+                        &nbsp;&nbsp;License assignee: <em><?= $assignee ?></em></h6>
                 </div>
             </div>
-            </form>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <h6>
+                        <?php $disabled = ($licenseScope == 'dataset' ? "disabled" : ""); ?>
+                        <?php $buttonClass = ($licenseScope == 'dataset' ? "btn-secondary" : "btn-primary"); ?>
+                    <button type="button" class="btn <?= $buttonClass ?> btn-sm" data-toggle="modal" data-target="#resourceModal" <?= $disabled ?>>
+                        <i class="fas fa-exchange-alt"></i> Change
+                    </button>
+
+                    &nbsp;&nbsp;License target resource: <em><?= $resourceId ?></em></h6>
+                </div>
+            </div>
 
 
-            <br />
+
+
+            <hr />
 
             <h5><?= $license['schema:title'] ?></h5>
 
@@ -71,14 +175,16 @@
                         <div class="card-body">
                             <p>
                                 <strong>License: </strong><?= $license['schema:title'] ?><br />
-                                <strong>Data scope: </strong><em>Entire dataset</em><br />
-                                <strong>Assignee scope: </strong><em><?= $assignee ?></em>
+                                <strong>License scope: </strong><em><?= $licenseScope ?></em><br />
+                                <strong>Assignee scope: </strong><em><?= $assignee ?></em><br />
+                                <strong>Target resource: </strong><em><?= $resourceId ?></em>
                             </p>
-
+                            <!--
                             <div class="btn-group" role="group" aria-label="Basic example">
                                 <a class="btn btn-danger" href="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'delete'],[]); ?>" role="button"><i class="fas fa-trash-alt"></i> Remove license</a>
                                 <a class="btn btn-warning" href="#" role="button"><i class="fas fa-edit"></i> Modify license</a>
                             </div>
+                            -->
 
                         </div>
                     </div>
@@ -195,7 +301,7 @@
                     <div class="card-header" id="headingThree">
                         <h5 class="mb-0">
                             <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                Dataset license history
+                                Dataset/resource target license history <em>(assignee: <?= $assignee ?>)</em>
                             </button>
                         </h5>
                     </div>

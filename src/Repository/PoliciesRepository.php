@@ -38,6 +38,25 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         return null;
     }
 
+    public function getResourceUserLicense($datasetUuid, $assignee, $resourceType, $resourceId) {
+        $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        if (count($metadataResponse) === 0) {
+            // list is empty.
+            $metadata = [];
+        }
+        else {
+            $metadata = $metadataResponse[0];
+        }
+        if (isset($metadata['policy'])){
+            foreach ($metadata['policy'][$resourceType]['active'] as $licenseItem) {
+                if ($licenseItem['odrl:assignee'] == $assignee && $licenseItem['resourceID'] == $resourceId) {
+                    return $licenseItem;
+                }
+            }
+        }
+        return null;
+    }
+
     public function getDatasetLicenseUserList($datasetUuid) {
         $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
         if (count($metadataResponse) === 0) {
@@ -59,6 +78,47 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         return $userList;
     }
 
+    public function getResourceLicenseUserList($datasetUuid, $resourceType) {
+        $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        if (count($metadataResponse) === 0) {
+            // list is empty.
+            $metadata = [];
+        }
+        else {
+            $metadata = $metadataResponse[0];
+        }
+        $userList = [];
+        if (isset($metadata['policy'])){
+            // Loop through all the active policies
+            foreach ($metadata['policy'][$resourceType]['active'] as $license) {
+                if (!in_array($license['odrl:assignee'], $userList)) {
+                    array_push($userList, $license['odrl:assignee']);
+                }
+            }
+        }
+        return $userList;
+    }
+
+    public function getUserResourceList($datasetUuid, $assignee, $resourceType) {
+        $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        if (count($metadataResponse) === 0) {
+            // list is empty.
+            $metadata = [];
+        }
+        else {
+            $metadata = $metadataResponse[0];
+        }
+        $resourceList = [];
+        if (isset($metadata['policy'][$resourceType]['active'])){
+            foreach ($metadata['policy'][$resourceType]['active'] as $license) {
+                if ($license['odrl:assignee'] == $assignee) {
+                    array_push($resourceList, $license['resourceID']);
+                }
+            }
+        }
+        return $resourceList;
+    }
+
     public function getDatasetUserLicenseHistory($datasetUuid, $assignee) {
         $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
         $history = [];
@@ -72,6 +132,26 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         if (isset($metadata['policy']['dataset']['inactive'])){
             foreach ($metadata['policy']['dataset']['inactive'] as $license) {
                 if ($license['odrl:assignee'] == $assignee) {
+                    array_push($history, $license);
+                }
+            }
+        }
+        return $history;
+    }
+
+    public function getResourceUserLicenseHistory($datasetUuid, $assignee, $resourceType, $resourceId) {
+        $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);
+        $history = [];
+        if (count($metadataResponse) === 0) {
+            // list is empty.
+            $metadata = [];
+        }
+        else {
+            $metadata = $metadataResponse[0];
+        }
+        if (isset($metadata['policy'][$resourceType]['inactive'])){
+            foreach ($metadata['policy'][$resourceType]['inactive'] as $license) {
+                if ($license['odrl:assignee'] == $assignee && $license['resourceID'] == $resourceId) {
                     array_push($history, $license);
                 }
             }

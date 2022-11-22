@@ -103,8 +103,10 @@ class PolicyController extends AbstractActionController
         $dataset = $this->_dataset_repository->findDataset($id);
         $typeParam = $this->params()->fromQuery('type', dataset);
         $assigneeParam = $this->params()->fromQuery('assignee', 'all');
-        $jsonParam = $this->params()->fromQuery('jsonDoc', null);
-        $fileParam = $this->params()->fromQuery('filename', null);
+        $licenseScopeParam = $this->params()->fromQuery('licensescope', 'dataset');
+        //$jsonParam = $this->params()->fromQuery('jsonDoc', null);
+        //$fileParam = $this->params()->fromQuery('filename', null);
+        $resourceIdParam = $this->params()->fromQuery('resourceid', null);
         //$permissions = $this->_repository->findDatasetPermissions($id);
         $message = "Dataset: " . $id;
         $messages = [];
@@ -157,9 +159,34 @@ class PolicyController extends AbstractActionController
                 ]
             ];
 
-            $license = $this->_policyRepository->getDatasetUserLicense($dataset->uuid, $assigneeParam);
-            $assigneeList = $this->_policyRepository->getDatasetLicenseUserList($dataset->uuid);
-            $history = $this->_policyRepository->getDatasetUserLicenseHistory($dataset->uuid, $assigneeParam);
+            // Get license scope selection and load license, assignee list and history accordingly.
+            switch ($licenseScopeParam) {
+                case "jsondoc":
+                    $resourceList = $this->_policyRepository->getUserResourceList($dataset->uuid, $assigneeParam, 'document');
+                    // If jsondoc scope has been selected and no resource yet selected, return the first resource and display that until further selection is made
+                    if (is_null($resourceIdParam)) {
+                        $resourceIdParam = $resourceList[0];
+                    }
+                    $license = $this->_policyRepository->getResourceUserLicense($dataset->uuid, $assigneeParam, 'document', $resourceIdParam);
+                    $assigneeList = $this->_policyRepository->getResourceLicenseUserList($dataset->uuid, 'document');
+                    $history = $this->_policyRepository->getResourceUserLicenseHistory($dataset->uuid, $assigneeParam, 'document', $resourceIdParam);
+                    break;
+                case "file":
+                    $resourceList = $this->_policyRepository->getUserResourceList($dataset->uuid, $assigneeParam, 'file');
+                    // If file scope has been selected and no resource yet selected, return the first resource and display that until further selection is made
+                    if (is_null($resourceIdParam)) {
+                        $resourceIdParam = $resourceList[0];
+                    }
+                    $license = $this->_policyRepository->getResourceUserLicense($dataset->uuid, $assigneeParam, 'file', $resourceIdParam);
+                    $assigneeList = $this->_policyRepository->getResourceLicenseUserList($dataset->uuid, 'file');
+                    $history = $this->_policyRepository->getResourceUserLicenseHistory($dataset->uuid, $assigneeParam, 'file', $resourceIdParam);
+                    break;
+                default:
+                    $license = $this->_policyRepository->getDatasetUserLicense($dataset->uuid, $assigneeParam);
+                    $assigneeList = $this->_policyRepository->getDatasetLicenseUserList($dataset->uuid);
+                    $resourceList = [];
+                    $history = $this->_policyRepository->getDatasetUserLicenseHistory($dataset->uuid, $assigneeParam);
+            }
 
             return new ViewModel([
                 'messages' => $messages,
@@ -171,7 +198,10 @@ class PolicyController extends AbstractActionController
                 'license' => $license,
                 'history' => $history,
                 'assigneeList' => $assigneeList,
-                'assignee' => $assigneeParam
+                'assignee' => $assigneeParam,
+                'licenseScope' => $licenseScopeParam,
+                'resourceList' => $resourceList,
+                'resourceId' => $resourceIdParam,
             ]);
         }
         else{
