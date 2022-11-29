@@ -819,4 +819,71 @@ class PolicyController extends AbstractActionController
 
         return $metadata;
     }
+
+    // ******************************************************************************************
+    // ******************************************************************************************
+
+    public function newrequestAction() {
+        $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
+        $id = (int) $this->params()->fromRoute('id', 0);
+
+        $dataset = $this->_dataset_repository->findDataset($id);
+        //$permissions = $this->_repository->findDatasetPermissions($id);
+        $message = "Dataset: " . $id;
+        $messages = [];
+        $flashMessenger = $this->flashMessenger();
+        if ($flashMessenger->hasMessages()) {
+            foreach($flashMessenger->getMessages() as $flashMessage) {
+                $messages[] = [
+                    'type' => 'warning',
+                    'message' => $flashMessage
+                ];
+            }
+        }
+        $actions = [];
+        $can_view = $this->_permissionManager->canView($dataset,$user_id);
+        $can_read = $this->_permissionManager->canRead($dataset,$user_id);
+        $can_edit = $this->_permissionManager->canEdit($dataset,$user_id);
+
+        $allPolicies = $this->_policyRepository->getAllPolicies();
+
+        return new ViewModel([
+            'messages' => $messages,
+            'dataset' => $dataset,
+            'features' => $this->datasetsFeatureManager()->getFeatures($id),
+            'allPolicies' => $allPolicies
+        ]);
+    }
+
+
+    public function requestsAction() {
+        $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
+        $id = (int) $this->params()->fromRoute('id', 0);
+
+        $dataset = $this->_dataset_repository->findDataset($id);
+        //$permissions = $this->_repository->findDatasetPermissions($id);
+        $message = "Dataset: " . $id;
+        $messages = [];
+        $flashMessenger = $this->flashMessenger();
+        if ($flashMessenger->hasMessages()) {
+            foreach($flashMessenger->getMessages() as $flashMessage) {
+                $messages[] = [
+                    'type' => 'warning',
+                    'message' => $flashMessage
+                ];
+            }
+        }
+        $actions = [];
+        $can_view = $this->_permissionManager->canView($dataset,$user_id);
+        $can_read = $this->_permissionManager->canRead($dataset,$user_id);
+        $can_edit = $this->_permissionManager->canEdit($dataset,$user_id);
+
+        return new ViewModel([
+            'messages' => $messages,
+            'dataset' => $dataset,
+            'features' => $this->datasetsFeatureManager()->getFeatures($id),
+        ]);
+    }
 }

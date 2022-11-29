@@ -114,10 +114,18 @@
             <!--
             UUID: <?= $dataset->uuid ?><br />
             -->
-            <br />
-            <br />
+            <br /><br />
 
+            <?php
+            $activeTab = [
+                'index' => true,
+                'requests' => false,
+                'dataset' => $dataset
+            ];
+            ?>
+            <?= $this->partial('mkdf/policies/partial/navtabs', $activeTab); ?>
 
+            <br />
 
             <div class="row">
                 <div class="col-md-12">

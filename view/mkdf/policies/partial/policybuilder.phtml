@@ -1,0 +1,281 @@
+<!-- Modals -->
+<div class="modal fade" id="permissionSelectorModal" tabindex="-1" aria-labelledby="permissionSelectorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="permissionSelectorModalLabel">License Permission Policies</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    <span id="permissionSelectorModalContent">
+                        <!--Modal content here-->
+                    </span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ******************* -->
+<div class="modal fade" id="prohibitionSelectorModal" tabindex="-1" aria-labelledby="prohibitionSelectorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="prohibitionSelectorModalLabel">License Prohibition Policies</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    <span id="prohibitionSelectorModalContent">
+                        <!--Modal content here-->
+                    </span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ******************* -->
+<div class="modal fade" id="obligationSelectorModal" tabindex="-1" aria-labelledby="obligationSelectorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="obligationSelectorModalLabel">License Obligation Policies</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    <span id="obligationSelectorModalContent">
+                        <!--Modal content here-->
+                    </span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ******************* -->
+
+
+
+<form method="post" id="mainform" action="<?= $this->formSubmitUrl ?>">
+    <div class="form-group">
+        <label for="licenseTitle">License request reason</label>
+        <input type="text" class="form-control" id="licenseTitle" name="licenseTitle" placeholder="license title">
+    </div>
+    <div class="form-group">
+        <label for="licenseText">Please provide any details you can of your request here</label>
+        <textarea class="form-control" id="licenseText" name="licenseText" rows="4"></textarea>
+    </div>
+
+
+    <!--
+    <div class="form-group">
+        <label for="assignee">License assignee</label>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="assignee" id="assigneeAnon" value="assigneeAnon" checked>
+        <label class="form-check-label" for="assigneeAnon">
+            All users
+        </label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="assignee" id="assigneeUser" value="assigneeUser">
+        <label class="form-check-label" for="assigneeUser">
+            Named user
+        </label>
+    </div>
+        <input type="text" class="form-control" id="namedAssignee" name="namedAssignee" placeholder="email address">
+    </div>
+    -->
+    <hr />
+    <div class="row">
+        <div class="col-md-12">
+            Select from an existing license as a starter, here...
+        </div>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <h5>Permissions <span class="text-primary">
+                                <a href='#' class='text-primary' data-toggle='modal' data-target='#permissionSelectorModal'>
+                                    <i class="fas fa-plus-square"></i>
+                                </a>
+                            </span></h5>
+            <ul class="list-group" id="permissionsListUL">
+
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h5>Obligations <span class="text-primary">
+                                <a href="#" class="text-primary" data-toggle="modal" data-target="#obligationSelectorModal">
+                                    <i class="fas fa-plus-square"></i>
+                                </a>
+                            </span></h5>
+            <ul class="list-group" id="obligationsListUL">
+
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h5>Prohibitions <span class="text-primary">
+                                <a href="#" class="text-primary" data-toggle="modal" data-target="#prohibitionSelectorModal">
+                                    <i class="fas fa-plus-square"></i>
+                                </a>
+                            </span></h5>
+            <ul class="list-group" id="prohibitionsListUL">
+
+            </ul>
+        </div>
+    </div>
+    <hr />
+    <!-- <?= var_dump($this->allPolicies); ?> -->
+
+    <!-- <button type="submit" class="btn btn-primary">Save</button> -->
+    <input type="hidden" id="policies" name="policies" value="">
+    <button id="saveButton" class="btn btn-primary btn-sm align-baseline"><i class="fas fa-play"></i> Save</button>
+
+</form>
+
+
+
+<!-- ********** JS SCRIPTS ********* -->
+
+<script>
+    var license;
+
+    function initLicense() {
+        license = {
+            "permissions": [],
+            "obligations": [],
+            "prohibitions": []
+        };
+        return license;
+    }
+
+    function addPolicy(action, section) {
+        actionObject = {
+            "action": [action]
+        };
+        license[section].push(actionObject);
+        // Now make the button for adding this policy disabled
+        const buttonName = section+getShortName(action);
+        $('#'+buttonName).prop('disabled', true);
+        updatePoliciesView();
+    }
+
+    function removePolicy(action, section) {
+        foundIndex = -1;
+        // Look for array index of policy action
+        for (i = 0; i < license[section].length; i++) {
+            if (license[section][i].action[0] == action) {
+                foundIndex = i;
+            }
+        }
+        // Remove policy
+        if (foundIndex >= 0) {
+            license[section].splice(foundIndex, 1);
+        }
+        // Re-enable policy add button
+        const buttonName = section+getShortName(action);
+        $('#'+buttonName).prop('disabled', false);
+
+        // Update UI list of policies
+        updatePoliciesView();
+    }
+
+    function loadPolicies() {
+        allPolicies = <?= json_encode($this->allPolicies); ?>;
+        return allPolicies;
+    }
+
+    function getShortName(input) {
+        position = input.lastIndexOf('#');
+        if (position < 0){
+            position = input.lastIndexOf(':');
+        }
+        if (position < 0) {
+            return input;
+        }
+        else {
+            return input.substring(position + 1);
+        }
+    }
+
+    function addPoliciesToModal(policies, modal, section) {
+        for (i = 0; i < policies.length; i++) {
+            const element = policies[i];
+            var html = '<p><button type="button" class="btn btn-primary" onclick="addPolicy(\''+element+'\', \''+section+'\')" id="'+section+getShortName(element)+'">';
+            html += '<i class="fas fa-plus-square"></i> ' + getShortName(element) + '</button></p>';
+            $( modal ).append( html );
+        }
+    }
+
+    function updatePoliciesView() {
+        html = '';
+        for (i = 0; i < license.permissions.length; i++) {
+            liHtml = '';
+            liHtml += '<li class="list-group-item"> <span class="text-success"><i class="fas fa-check-circle"></i></span> ';
+            liHtml += getShortName(license.permissions[i].action[0]);
+            liHtml += ' <span class="text-right text-danger"><a href="#" onclick="removePolicy(\''+license.permissions[i].action[0]+'\',\'permissions\')">';
+            liHtml += '<i class="fas fa-trash-alt"></i></a></span></li>';
+            html += liHtml;
+        }
+        $('#permissionsListUL').html(html);
+
+        html = '';
+        for (i = 0; i < license.obligations.length; i++) {
+            liHtml = '';
+            liHtml += '<li class="list-group-item"> <span class="text-warning"><i class="fas fa-exclamation-circle"></i></span> ';
+            liHtml += getShortName(license.obligations[i].action[0]);
+            liHtml += ' <span class="text-right"><a href="#" onclick="removePolicy(\''+license.obligations[i].action[0]+'\',\'obligations\')">';
+            liHtml += '<i class="fas fa-trash-alt"></i></a></span></li>';
+            html += liHtml;
+        }
+        $('#obligationsListUL').html(html);
+
+        html = '';
+        for (i = 0; i < license.prohibitions.length; i++) {
+            liHtml = '';
+            liHtml += '<li class="list-group-item"> <span class="text-danger"><i class="fas fa-times-circle"></i></span> ';
+            liHtml += getShortName(license.prohibitions[i].action[0]);
+            liHtml += ' <span class="text-right"><a href="#" onclick="removePolicy(\''+license.prohibitions[i].action[0]+'\',\'prohibitions\')">';
+            liHtml += '<i class="fas fa-trash-alt"></i></a></span></li>';
+            html += liHtml;
+        }
+        $('#prohibitionsListUL').html(html);
+    }
+
+    $(document).ready(function(){
+        const allPolicies = loadPolicies();
+        license = initLicense();
+        addPoliciesToModal(allPolicies['permissions'], "#permissionSelectorModalContent", 'permissions');
+        addPoliciesToModal(allPolicies['obligations'], "#obligationSelectorModalContent", 'obligations');
+        addPoliciesToModal(allPolicies['prohibitions'], "#prohibitionSelectorModalContent", 'prohibitions');
+
+        var data = {
+            attrib1: "foo",
+            attrib2: "bar"
+        };
+        /*
+        $('#mainform').submit(function(e) {
+            e.preventDefault();
+            //e.stopPropagation();
+            $.post(this.action, data);
+            //return false;
+        });
+        */
+        $("#saveButton").on("click", function () {
+            //$('#query').val(query);
+            $("#policies").val(JSON.stringify(license));
+            $("#mainform").submit();
+            e.preventDefault();
+        });
+
+    });
+</script>
