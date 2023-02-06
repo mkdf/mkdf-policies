@@ -1,0 +1,66 @@
+<?php
+    function getShortName($longname){
+        $pos = strrpos($longname,'#');
+        if (!$pos) {
+            $pos = strrpos($longname,':');
+        }
+        if ($pos > 0) {
+            return substr($longname,$pos+1);
+        }
+        return $longname;
+    }
+?>
+<div class="row">
+    <div class="col-md-4">
+        <h6>Permissions
+            <!--<a href='#' class='text-secondary' data-toggle='modal' data-target='#permissionModal'><i class='fas fa-info-circle'></i></a>-->
+        </h6>
+        <ul class="list-group" id="permissionList">
+            <?php foreach($policies['permissions'] as $permission): ?>
+            <li class="list-group-item">
+                <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                <?= getShortName($permission['action'][0]) ?>
+                <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                    <i class="fas fa-info-circle"></i>
+                </a>
+            </li>
+            <?php endforeach; ?>
+
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <h6>Obligations
+            <!--<a href='#' class='text-secondary' data-toggle='modal' data-target='#obligationModal'><i class='fas fa-info-circle'></i></a>-->
+        </h6>
+        <ul class="list-group" id="obligationList">
+            <?php foreach($policies['obligations'] as $obligation): ?>
+                <li class="list-group-item">
+                    <span class="text-info"><i class="fas fa-exclamation-circle"></i></span>
+                    <?= getShortName($obligation['action'][0]) ?>
+                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <h6>Prohibitions
+            <!--<a href='#' class='text-secondary' data-toggle='modal' data-target='#prohibitionModal'><i class='fas fa-info-circle'></i></a>-->
+        </h6>
+        <ul class="list-group" id="prohibitionList">
+            <?php foreach($policies['prohibitions'] as $prohibition): ?>
+                <li class="list-group-item">
+                    <span class="text-danger"><i class="fas fa-times-circle"></i></span>
+                    <?= getShortName($prohibition['action'][0]) ?>
+                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+
+
+        </ul>
+    </div>
+</div>

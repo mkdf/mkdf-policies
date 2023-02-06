@@ -281,9 +281,6 @@
         $("#saveButton").on("click", function () {
             //$('#query').val(query);
             $("#policies").val(JSON.stringify(license));
-            if ($("#licenseTitle")).val() == ''){
-                alert("oh...");
-            }
             $("#mainform").submit();
             e.preventDefault();
         });

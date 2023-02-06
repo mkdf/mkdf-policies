@@ -62,13 +62,13 @@
                                     <div class="card">
                                         <div class="card-header" id="<?= ('heading-'.$historyItem['timestamp']) ?>">
                                             <h5 class="mb-0">
-                                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#<?= ('collapse-'.$historyItem['timestamp']) ?>" aria-expanded="true" aria-controls="<?= ('collapse-'.$historyItem['timestamp']) ?>">
+                                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#<?= ('collapse-'.$historyItem['timestamp']) ?>" aria-expanded="true" aria-controls="<?= ('collapse-'.$historyItem['timestamp']) ?>">
                                                     <?= date('Y/m/d H:i',$historyItem['timestamp']) ?>
                                                 </button>
                                             </h5>
                                         </div>
 
-                                        <div id="<?= ('collapse-'.$historyItem['timestamp']) ?>" class="collapse show" aria-labelledby="<?= ('heading-'.$historyItem['timestamp']) ?>" data-parent="#accordionExample">
+                                        <div id="<?= ('collapse-'.$historyItem['timestamp']) ?>" class="collapse" aria-labelledby="<?= ('heading-'.$historyItem['timestamp']) ?>" data-parent="#accordionExample">
                                             <div class="card-body">
                                                 <?= $historyItem['type'] ?><br />
                                                 <?= $historyItem['title'] ?><br />
@@ -80,7 +80,31 @@
                                 </div>
 
                             </td>
-                            <td><?= $request['status'] ?></td>
+
+                            <?php
+                            switch ($request['status']) {
+                                case 'APPROVED':
+                                    $statusClass = 'bg-success';
+                                    break;
+                                case 'REQUEST':
+                                    $statusClass = 'bg-warning';
+                                    break;
+                                case 'REJECTED':
+                                    $statusClass = 'bg-danger';
+                                    break;
+                                case 'COUNTER OFFER':
+                                    $statusClass = 'bg-warning';
+                                    break;
+                                case 'COUNTER REQUEST':
+                                    $statusClass = 'bg-warning';
+                                    break;
+
+                                default:
+                                    $statusClass = 'bg-warning';
+                            }
+                            ?>
+
+                            <td class="<?= $statusClass ?>"><?= $request['status'] ?></td>
                             <td>
                                 <!--<div class="btn-group" role="group" aria-label="Basic example">-->
                                     <!-- <a class="btn btn-warning" href="#" role="button"><i class="fas fa-edit"></i> Modify license</a> -->

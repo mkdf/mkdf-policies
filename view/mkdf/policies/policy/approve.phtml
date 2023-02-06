@@ -1,1 +1,49 @@
 <?php
+$policies = $mostRecentRequest['policies'];
+?>
+<h1>Approve license request</h1>
+<?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
+<!-- Token: <?= $token ?> -->
+<p>
+    Are you sure you wish to approve this license request?<br />
+
+</p>
+<p>
+    A custom license will be created and made available to the user for use on this dataset.
+    Please specify a title and description for the custom license below.
+</p>
+<hr />
+<form method="post" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $requestObj['_id'], 'token' => $token]]) ?>">
+    <div class="form-group">
+        <label for="title">License title</label>
+        <input type="text" class="form-control" id="title" name="title" aria-describedby="titleHelp" placeholder="The title of the custom license">
+        <small id="titleHelp" class="form-text text-muted">Provide a title for the custom license</small>
+    </div>
+    <div class="form-group">
+        <label for="description">Description and/or license comments</label>
+        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+    </div>
+
+
+<hr />
+<h4>Request details</h4>
+<p>
+    <strong>User: </strong><?= $requestObj['user'] ?><br />
+    <strong>Date: </strong><?= date('Y/m/d H:i',$mostRecentRequest['timestamp']) ?><br />
+    <strong>Request: </strong><?= $mostRecentRequest['title'] ?><br />
+    <strong>Description: </strong><?= $mostRecentRequest['description'] ?><br />
+
+
+
+
+<?= $this->partial('mkdf/policies/partial/licenseview', ['policies' => $policies] ) ?>
+
+<hr />
+
+
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="submit" class="btn btn-primary">Approve this request</button>
+        <a class="btn btn-danger" href="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'requests'],['query' => []]) ?>">Cancel, return to license requests</a>
+    </div>
+
+</form>
