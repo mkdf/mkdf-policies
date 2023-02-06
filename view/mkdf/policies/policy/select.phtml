@@ -1,0 +1,378 @@
+<h1><?= $dataset->title ?></h1>
+<div class="container">
+
+    <!-- Modals -->
+    <div class="modal fade" id="permissionModal" tabindex="-1" aria-labelledby="permissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="permissionModalLabel">License Permission Policies</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="permissionModalContent"></span>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+    <div class="modal fade" id="obligationModal" tabindex="-1" aria-labelledby="obligationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="obligationModalLabel">License Obligation Policies</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="obligationModalContent"></span>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+    <div class="modal fade" id="prohibitionModal" tabindex="-1" aria-labelledby="prohibitionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="prohibitionModalLabel">License Obligation Policies</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="prohibitionModalContent"></span>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ******************* -->
+
+
+    <div class="row">
+        <div class="col-md-3">
+            <?= $this->partial('mkdf/datasets/partial/dataset-features', ['features' => $features, 'dataset_id' => $dataset->id] ) ?>
+        </div>
+        <div class="col-md-9">
+            <h2>Licenses and policies</h2>
+            <?= $this->partial('mkdf/core/partial/actions', $actions); ?>
+            <!--
+            UUID: <?= $dataset->uuid ?><br />
+            -->
+            <h4>Select an existing license</h4>
+
+            <form id="selectLicense" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'apply'],[]); ?>">
+
+                <select class="form-control" id="licenseSelect" name="license" onchange="loadLicense();">
+                    <option disabled>──────────</option>
+                    <option disabled>Custom licenses</option>
+                    <option disabled>──────────</option>
+
+                    <?php
+                    foreach ($customLicenses as $value) {
+                    print("<option value='-custom-".$value['schema:title']."'>".$value['schema:title']. " </option>\n");
+                }
+                ?>
+                    <option disabled>──────────</option>
+                    <option disabled>Standard licenses</option>
+                    <option disabled>──────────</option>
+
+                <?php
+                    //print_r($licenses)
+                    foreach ($licenses as $value) {
+                        print("<option value='".$value->{'odrl:uid'}."'>".$value->{'schema:title'} . " </option>\n");
+                    }
+                ?>
+                </select>
+
+                <hr />
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Apply license to:</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeDataset" value="dataset" checked>
+                            <label class="form-check-label" for="licenseScopeDataset">
+                                Entire dataset
+                            </label>
+                            <br /><br />
+
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeJson" value="json" >
+                            <label class="form-check-label" for="licenseScopeJson">
+                                Individual JSON document
+                            </label>
+                            <br />
+                            <input type="text" class="form-control" name="jsondoc" id="jsondoc" placeholder="JSON doc id">
+                            <br />
+
+                            <input class="form-check-input" type="radio" name="licenseScope" id="licenseScopeFile" value="file" >
+                            <label class="form-check-label" for="licenseScopeFile">
+                                Individual file
+                            </label>
+                            <br />
+                            <input type="text" class="form-control" name="filename" id="filename" placeholder="filename">
+
+                        </div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <h6>License assignee:</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="userScope" id="userScopeAll" value="all" checked>
+                            <label class="form-check-label" for="userScopeAll">
+                                All users
+                            </label>
+                            <br /><br />
+                            <input class="form-check-input" type="radio" name="userScope" id="userScopeNamedUser" value="namedUser">
+                            <label class="form-check-label" for="exampleuserScopeNamedUserRadios2">
+                                Individual user
+                            </label>
+                            <br />
+                            <input type="email" class="form-control" name="assigneeEmail" id="assigneeEmail" placeholder="Enter user's email">
+
+                        </div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <input type="hidden" name="datasetId" id="datasetId" value="<?= $dataset->id ?>">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus-square"></i> Apply license</button>
+                    </div>
+                </div>
+
+
+
+            <hr />
+            <div class="row">
+                <div class="col-md-4">
+                    <h6>Permissions
+                        <a href='#' class='text-secondary' data-toggle='modal' data-target='#permissionModal'><i class='fas fa-info-circle'></i></a>
+                    </h6>
+                    <ul class="list-group" id="permissionList">
+                        <li class="list-group-item">
+                            <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                            Private use
+                            <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                            Distribution
+                            <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                            Modification
+                            <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Obligations
+                        <a href='#' class='text-secondary' data-toggle='modal' data-target='#obligationModal'><i class='fas fa-info-circle'></i></a>
+                    </h6>
+                    <ul class="list-group" id="obligationList">
+                        <li class="list-group-item">
+                                <span class="text-info">
+                                    <i class="fas fa-exclamation-circle"></i></span>
+                            Attribution
+                            <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        </li>
+                        <li class="list-group-item"><span class="text-info">
+                                    <i class="fas fa-exclamation-circle"></i></span>
+                            Liability
+                            <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Prohibitions
+                        <a href='#' class='text-secondary' data-toggle='modal' data-target='#prohibitionModal'><i class='fas fa-info-circle'></i></a>
+                    </h6>
+                    <ul class="list-group" id="prohibitionList">
+                        <li class="list-group-item">
+                            <span class="text-danger"><i class="fas fa-times-circle"></i></span>
+                            Commercial use
+                            <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <span class="text-danger"><i class="fas fa-times-circle"></i></span>
+                            Modification
+                            <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr />
+            <h6>License timespan</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="validFrom">License valid from</label>
+                        <input type="date" class="form-control" name="validFrom" id="validFrom" aria-describedby="validFromHelp" placeholder="dd/mm/yyyy">
+                        <small id="validFromHelp" class="form-text text-muted">Leave this blank to make the license available now</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="validUntil">License valid until</label>
+                        <input type="date" class="form-control" name="validUntil" id="validUntil" aria-describedby="validUntilHelp" placeholder="dd/mm/yyyy">
+                        <small id="validUntilHelp" class="form-text text-muted">Leave this blank if you do not wish the license to expire</small>
+                    </div>
+                </div>
+            </div>
+            </form>
+            <hr />
+            <h6>Full license source:</h6>
+            <pre><span id="demo"></span></pre>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadLicense() {
+        var license = document.getElementById("licenseSelect").value;
+        var datasetId = document.getElementById("datasetId").value;
+        $("#permissionList").empty();
+        $("#obligationList").empty();
+        $("#prohibitionList").empty();
+        // Check if it's a standard library license or a dataset-specific custom license...
+        var custom = false;
+        var url;
+        //echo();
+        if (license.substring(0,8) == "-custom-") {
+            custom = true;
+            licenseName = license.substring(8);
+            url = "/dataset/policies/custom/" + datasetId + "?license=" + licenseName;
+        }
+        else {
+            licenseName = license;
+            url = "/policies/" + license;
+        }
+
+        document.getElementById("demo").innerHTML = "LOADING: " + licenseName + "...";
+        $.getJSON(url, function(result){
+            console.log(result);
+            document.getElementById("demo").innerHTML = JSON.stringify(result[0], null, 2);
+            renderPermissions(result[0]['odrl:permission']);
+            renderObligations(result[0]['odrl:obligation']);
+            renderProhibitions(result[0]['odrl:prohibition']);
+            //console.log
+        });
+    }
+
+    function loadPermissionModalContent(index) {
+
+    }
+
+    function renderPermissions(permissions) {
+        //console.log(permissions);
+        $("#permissionList").empty();
+        if (Array.isArray(permissions)) {
+            modalText = '';
+            for (i = 0; i < permissions.length; i++) {
+                liText = "<li class='list-group-item'> <span class='text-success'> <i class='fas fa-check-circle'></i></span>";
+                liText += " " + getShortName(permissions[i].action[0]) + " ";
+                if (i > 0) {
+                    modalText += "<hr />";
+                }
+                modalText += "<h6>" + permissions[i].action[0] + "</h6>";
+                modalText += "<p><em>permission description</em></p>";
+
+                if (Array.isArray(permissions[i].duty)) {
+                    liText += "<a href='#' class='text-warning' data-toggle='tooltip' data-placement='top' title='One or more duties are attached to this permission policy'>";
+                    liText += "<i class='fas fa-exclamation-circle'></i></a>";
+                    modalText += "<p> <span class='text-danger'><i class='fas fa-exclamation-circle'></i></span> The following duties are attached to this permission:<br />";
+                    for (j = 0; j < permissions[i].duty.length; j++) {
+                        modalText += "<em>" + permissions[i].duty[j] + "</em><br />";
+                    }
+                    modalText += "</p>";
+
+                }
+                $("#permissionList").append(liText);
+                $("#permissionModalContent").html(modalText);
+            }
+        }
+    }
+
+    function renderObligations(obligations) {
+        $("#obligationList").empty();
+        if (Array.isArray(obligations)) {
+            modalText = '';
+            for (i = 0; i < obligations.length; i++) {
+                liText = "<li class='list-group-item'> <span class='text-info'> <i class='fas fa-exclamation-circle'></i></span>";
+                liText += " " + getShortName(obligations[i].action[0]) + " ";
+                if (i > 0) {
+                    modalText += "<hr />";
+                }
+                modalText += "<h6>" + obligations[i].action[0] + "</h6>";
+                modalText += "<p><em>obligation description</em></p>";
+                $("#obligationList").append(liText);
+                $("#obligationModalContent").html(modalText);
+
+            }
+        }
+    }
+
+    function renderProhibitions(prohibitions) {
+        $("#prohibitionList").empty();
+        if (Array.isArray(prohibitions)) {
+            modalText = '';
+            for (i = 0; i < prohibitions.length; i++) {
+                liText = "<li class='list-group-item'> <span class='text-danger'> <i class='fas fa-times-circle'></i></span>";
+                liText += " " + getShortName(prohibitions[i].action[0]) + " ";
+                if (i > 0) {
+                    modalText += "<hr />";
+                }
+                modalText += "<h6>" + prohibitions[i].action[0] + "</h6>";
+                modalText += "<p><em>prohibition description</em></p>";
+                $("#prohibitionList").append(liText);
+                $("#prohibitionModalContent").html(modalText);
+            }
+        }
+    }
+
+    function getShortName(input) {
+        position = input.lastIndexOf('#');
+        if (position < 0){
+            position = input.lastIndexOf(':');
+        }
+        if (position < 0) {
+            return input;
+        }
+        else {
+            return input.substring(position + 1);
+        }
+    }
+
+    $(document).ready(function(){
+        loadLicense();
+    });
+</script>

@@ -1,20 +1,28 @@
 <?php
 namespace MKDF\Policies\Controller\Factory;
 
+use MKDF\Policies\Repository\PoliciesRepositoryInterface;
+use MKDF\Policies\Repository\PoliciesRepository;
+use MKDF\Datasets\Repository\MKDFDatasetRepositoryInterface;
+use MKDF\Datasets\Service\DatasetPermissionManagerInterface;
+use MKDF\Stream\Repository\Factory\MKDFStreamRepositoryFactory;
+use MKDF\Stream\Repository\MKDFStreamRepositoryInterface;
+use MKDF\File\Repository\MKDFFileRepositoryInterface;
 use MKDF\Policies\Controller\PolicyController;
-use MKDF\Core\Repository\MKDFCoreRepositoryInterface;
 use Zend\ServiceManager\Factory\FactoryInterface;
 use Interop\Container\ContainerInterface;
-use Zend\Session\SessionManager;
 
 class PolicyControllerFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $config = $container->get("Config");
-        $core_repository = $container->get(MKDFCoreRepositoryInterface::class);
-        $sessionManager = $container->get(SessionManager::class);
-        return new PolicyController($core_repository, $config);
+        $viewRenderer = $container->get('ViewRenderer');
+        $dataset_repository = $container->get(MKDFDatasetRepositoryInterface::class);
+        $repository = $container->get(MKDFStreamRepositoryInterface::class);
+        $policyRepository = $container->get(PoliciesRepositoryInterface::class);
+        $fileRepository = $container->get(MKDFFileRepositoryInterface::class);
+        $permissionManager = $container->get(DatasetPermissionManagerInterface::class);
+        return new PolicyController($policyRepository, $repository, $dataset_repository, $fileRepository, $permissionManager, $config, $viewRenderer);
     }
-
 }

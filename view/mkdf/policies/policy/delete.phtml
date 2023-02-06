@@ -1,0 +1,34 @@
+<h1>Remove license</h1>
+<?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
+<!-- Token: <?= $token ?> -->
+<p>
+    Are you sure you wish to remove this license?<br />
+    <em><?= $license ?></em>
+    <br />
+</p>
+<?= $this->partial('mkdf/core/partial/actions', [
+    'buttons'=>[
+        [
+            'type'=>'primary',
+            'label'=>'Yes, remove this license',
+            'target'=> 'dataset-policies',
+            'params'=>
+                [
+                    'id' => $dataset->id,
+                    'action' => 'delete'
+                ],
+            'query' =>
+                [
+                    'license' => $license,
+                    'licenseScope' => $licenseScope,
+                    'jsondoc' => $jsonDoc,
+                    'filename' => $filename,
+                    'assigneeScope' => $assigneeScope,
+                    'custom' => $custom,
+                    'validFrom' => $validFrom,
+                    'validUntil' => $validUntil,
+                    'token' => $token
+                ]
+        ],
+        ['type'=>'danger','label'=>'No, go back please', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'index']]]
+] ); ?>

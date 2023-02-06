@@ -1,0 +1,22 @@
+<?php
+    $indexClass = ($this->index) ? 'nav-link btn-light' : 'nav-link btn-secondary';
+    $requestsClass = ($this->requests) ? 'nav-link btn-light' : 'nav-link btn-secondary';
+    $newrequestClass = ($this->newrequest) ? 'nav-link btn-light' : 'nav-link btn-secondary';
+?>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="<?= $indexClass ?>" href="<?= $this->url( 'dataset-policies', ['id'=>$this->dataset->id, 'action'=>'index'],[]); ?>">
+            View licenses</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="<?= $newrequestClass ?>" href="<?= $this->url( 'dataset-policies', ['id'=>$this->dataset->id, 'action'=>'newrequest'],[]); ?>">Request new license</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="<?= $requestsClass ?>" href="<?= $this->url( 'dataset-policies', ['id'=>$this->dataset->id, 'action'=>'requests'],[]); ?>">License requests</a>
+    </li>
+    <!--
+    <li class="nav-item" role="presentation">
+        <a class="nav-link btn-secondary" href="#">License request status</a>
+    </li>
+    -->
+</ul>

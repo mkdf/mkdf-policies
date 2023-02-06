@@ -1,0 +1,400 @@
+<!-- Modals -->
+<div class="modal fade" id="licenseScopeModal" tabindex="-1" aria-labelledby="licenseScopeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="selectScope" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="licenseScopeModalLabel">Change License Scope</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="licenseScopeModalContent">
+                    <?php
+                    $licenseScopeOptions = ['dataset', 'jsondoc', 'file']
+                    ?>
+                    <select class="form-control" id="licenseScope" name="licenseScope">
+                        <?php foreach($licenseScopeOptions as $licenseScopeItem): ?>
+                            <?php $selected = ($licenseScopeItem == $licenseScope ? "selected" : ""); ?>
+                            <option value='<?= $licenseScopeItem ?>' <?= $selected ?>><?= $licenseScopeItem ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                        <em>Note: License assignee and  target resource selection will be cleared</em>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ******************* -->
+<div class="modal fade" id="assigneeModal" tabindex="-1" aria-labelledby="assigneeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="selectAssignee" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
+                <input type="hidden" name="licenseScope" id="licenseScope" value="<?= $licenseScope ?>">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assigneeModalLabel">Change License Assignee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="assigneeModalContent">
+                    <select class="form-control" id="assignee" name="assignee">
+                        <?php foreach($assigneeList as $assigneeListItem): ?>
+                            <?php $selected = ($assigneeListItem == $assignee ? "selected" : ""); ?>
+                            <option value='<?= $assigneeListItem ?>' <?= $selected ?>><?= $assigneeListItem ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                        <em>Note: License target resource selection will be cleared</em>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ******************* -->
+<div class="modal fade" id="resourceModal" tabindex="-1" aria-labelledby="resourceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="selectResource" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'index'],[]); ?>">
+                <input type="hidden" name="licenseScope" id="licenseScope" value="<?= $licenseScope ?>">
+                <input type="hidden" name="assignee" id="assignee" value="<?= $assignee ?>">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resourceModalLabel">Change License target resource</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="resourceModalContent">
+                    <select class="form-control" id="resourceid" name="resourceid">
+                        <?php foreach($resourceList as $resourceListItem): ?>
+                            <?php $selected = ($resourceListItem == $resourceId ? "selected" : ""); ?>
+                            <option value='<?= $resourceListItem ?>' <?= $selected ?>><?= $resourceListItem ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ******************* -->
+
+
+
+
+<?php
+$activeTab = [
+    'index' => true,
+    'requests' => false,
+    'dataset' => $dataset
+];
+?>
+<?= $this->partial('mkdf/policies/partial/navtabs', $activeTab); ?>
+
+<br />
+
+<div class="row">
+    <div class="col-md-12">
+        <h4>View licenses</h4>
+        <h6>
+            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#licenseScopeModal">
+                <i class="fas fa-exchange-alt"></i> Change
+            </button>
+
+            &nbsp;&nbsp;License scope: <em><?= $licenseScope ?></em></h6>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h6>
+            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#assigneeModal">
+                <i class="fas fa-exchange-alt"></i> Change
+            </button>
+            &nbsp;&nbsp;License assignee: <em><?= $assignee ?></em></h6>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h6>
+            <?php $disabled = ($licenseScope == 'dataset' ? "disabled" : ""); ?>
+            <?php $buttonClass = ($licenseScope == 'dataset' ? "btn-secondary" : "btn-primary"); ?>
+            <button type="button" class="btn <?= $buttonClass ?> btn-sm" data-toggle="modal" data-target="#resourceModal" <?= $disabled ?>>
+                <i class="fas fa-exchange-alt"></i> Change
+            </button>
+
+            &nbsp;&nbsp;License target resource: <em><?= $resourceId ?></em></h6>
+    </div>
+</div>
+
+
+
+
+<hr />
+
+<h5>Licenses applied:</h5>
+
+
+<div class="accordion" id="parentAccordion">
+    <?php
+    $counter = 0;
+    ?>
+    <?php foreach($licenses as $license): ?>
+
+        <?php
+        $counter += 1;
+        $cardHeaderID = "header".strval($counter);
+        $collapseID = "collapseLicense".strval($counter);
+        $headingLicenseID = "headingLicense".strval($counter);
+        $subAccordionID = "subAccordion".strval($counter);
+        $licenseDetailsHeading = "licenseDetailsHeading".strval($counter);
+        $licenseDetailsCollapse = "licenseDetailsCollapse".strval($counter);
+        $licensePoliciesHeading = "licensePoliciesHeading".strval($counter);
+        $licensePoliciesCollapse = "licensePoliciesCollapse".strval($counter);
+        $licenseODRLHeading = "licenseODRLHeading".strval($counter);
+        $licenseODRLCollapse = "licenseODRLCollapse".strval($counter);
+        ?>
+        <div class="card">
+            <div class="card-header" id="<?= $cardHeaderID ?>">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#<?= $collapseID ?>" aria-expanded="true" aria-controls="<?= $collapseID ?>">
+                        <?= $license['schema:title'] ?>
+                    </button>
+                </h5>
+            </div>
+
+            <div id="<?= $collapseID ?>" class="collapse" aria-labelledby="<?= $headingLicenseID ?>" data-parent="#parentAccordion">
+                <div class="card-body">
+
+                    <!-- ************ License sub accordion here ***** -->
+                    <div class="accordion" id="<?= $subAccordionID ?>">
+                        <div class="card">
+                            <div class="card-header card-header-license" id="<?= $licenseDetailsHeading ?>">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#<?= $licenseDetailsCollapse ?>" aria-expanded="true" aria-controls="<?= $licenseDetailsCollapse ?>">
+                                        License details and actions
+                                    </button>
+                                </h5>
+                            </div>
+
+                            <div id="<?= $licenseDetailsCollapse ?>" class="collapse" aria-labelledby="$licenseDetailsHeading" data-parent="#<?= $subAccordionID ?>">
+                                <div class="card-body">
+                                    <p>
+                                        <strong>License: </strong><?= $license['schema:title'] ?><br />
+                                        <strong>License scope: </strong><em><?= $licenseScope ?></em><br />
+                                        <strong>Assignee scope: </strong><em><?= $assignee ?></em><br />
+                                        <strong>Target resource: </strong><em><?= $resourceId ?></em>
+                                    </p>
+
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+                                        <a class="btn btn-danger" href="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'delete'],['query' => ['license' => $license['odrl:uid'], 'targetResource' => $resourceId, 'licenseScope' => $licenseScope, 'assigneeScope' => $assignee]]); ?>" role="button"><i class="fas fa-trash-alt"></i> Remove license</a>
+                                        <!-- <a class="btn btn-warning" href="#" role="button"><i class="fas fa-edit"></i> Modify license</a> -->
+                                    </div>
+
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header card-header-license" id="<?= $licensePoliciesHeading ?>">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#<?= $licensePoliciesCollapse ?>" aria-expanded="false" aria-controls="<?= $licensePoliciesCollapse ?>">
+                                        License policies
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="<?= $licensePoliciesCollapse ?>" class="collapse" aria-labelledby="<?= $licensePoliciesHeading ?>" data-parent="#<?= $subAccordionID ?>">
+                                <div class="card-body">
+                                    <!-- policies here -->
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h5>Permissions
+                                                <a href='#' class='text-secondary' data-toggle='modal' data-target='#permissionModal'><i class='fas fa-info-circle'></i></a>
+                                            </h5>
+                                            <ul class="list-group" id="permissionList">
+                                                <?php
+                                                foreach ($license['odrl:permission'] as $permission) {
+                                                    echo('<li class="list-group-item">');
+                                                    echo('<span class="text-success"><i class="fas fa-check-circle"></i> </span>');
+                                                    $pos = strrpos($permission['action'][0],'#');
+                                                    if (!$pos) {
+                                                        $pos = strrpos($permission['action'][0],':');
+                                                    }
+                                                    if (!$pos) {
+                                                        $shortname = $permission['action'][0];
+                                                    }
+                                                    else {
+                                                        $shortname = substr($permission['action'][0], $pos + 1);
+                                                    }
+                                                    echo($shortname);
+                                                    // TODO - add flag here if obligations attached
+                                                    echo('</li>');
+                                                }
+                                                ?>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h5>Obligations
+                                                <a href='#' class='text-secondary' data-toggle='modal' data-target='#obligationModal'><i class='fas fa-info-circle'></i></a>
+                                            </h5>
+                                            <ul class="list-group" id="obligationList">
+                                                <?php
+                                                foreach ($license['odrl:obligation'] as $obligation) {
+                                                    echo('<li class="list-group-item">');
+                                                    echo('<span class="text-info"><i class="fas fa-exclamation-circle"></i> </span>');
+                                                    $pos = strrpos($obligation['action'][0],'#');
+                                                    if (!$pos) {
+                                                        $pos = strrpos($obligation['action'][0],':');
+                                                    }
+                                                    if (!$pos) {
+                                                        $shortname = $obligation['action'][0];
+                                                    }
+                                                    else {
+                                                        $shortname = substr($obligation['action'][0], $pos + 1);
+                                                    }
+                                                    echo($shortname);
+                                                    echo('</li>');
+                                                }
+                                                ?>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h5>Prohibitions
+                                                <a href='#' class='text-secondary' data-toggle='modal' data-target='#prohibitionModal'><i class='fas fa-info-circle'></i></a>
+                                            </h5>
+                                            <ul class="list-group" id="prohibitionList">
+                                                <?php
+                                                foreach ($license['odrl:prohibition'] as $prohibition) {
+                                                    echo('<li class="list-group-item">');
+                                                    echo('<span class="text-danger"><i class="fas fa-times-circle"></i> </span>');
+                                                    $pos = strrpos($prohibition['action'][0],'#');
+                                                    if (!$pos) {
+                                                        $pos = strrpos($prohibition['action'][0],':');
+                                                    }
+                                                    if (!$pos) {
+                                                        $shortname = $prohibition['action'][0];
+                                                    }
+                                                    else {
+                                                        $shortname = substr($prohibition['action'][0], $pos + 1);
+                                                    }
+                                                    echo($shortname);
+                                                    echo('</li>');
+                                                }
+                                                ?>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header card-header-license" id="<?= $licenseODRLHeading ?>">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#<?= $licenseODRLCollapse ?>" aria-expanded="false" aria-controls="<?= $licenseODRLCollapse ?>">
+                                        License ODRL source
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="<?= $licenseODRLCollapse ?>" class="collapse" aria-labelledby="<?= $licenseODRLHeading ?>" data-parent="#<?= $subAccordionID ?>">
+                                <div class="card-body">
+                            <pre>
+<?= stripslashes(json_encode($license, JSON_PRETTY_PRINT)) ?>
+                            </pre>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- *** END OF LICENSE sub accordion -->
+
+
+                </div>
+            </div>
+        </div>
+
+    <?php endforeach; ?>
+
+    <!-------->
+
+
+
+</div>
+
+<hr />
+
+<div class="accordion" id="historyAccordion">
+
+
+    <div class="card">
+        <div class="card-header" id="headingThree">
+            <h5 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    Inactive licenses <em>(assignee: <?= $assignee ?>)</em>
+                </button>
+            </h5>
+        </div>
+        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#historyAccordion">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">License</th>
+                        <th scope="col">Valid from</th>
+                        <th scope="col">Valid until</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    foreach ($history as $row) {
+                        print ("<tr>");
+                        print ("<td>".$row['schema:title']."</td>");
+                        print ("<td>".date("d/m/Y H:i:s", $row['schema:validFrom'])."</td>");
+                        print ("<td>".date("d/m/Y H:i:s", $row['schema:validUntil'])."</td>");
+                        print ("</tr>");
+                    }
+                    ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<hr />
+<h5>Licenses in use with API keys</h5>
+<table class="table table-bordered">
+    <tr>
+        <th>User</th>
+        <th>License</th>
+    </tr>
+    <?php foreach ($licensesAssigned as $association): ?>
+        <tr>
+            <td><?= $association['user'] ?></td>
+            <td><?= $association['license'] ?></td>
+        </tr>
+    <?php endforeach; ?>
+</table>

@@ -1,0 +1,27 @@
+<h1>Reject license request</h1>
+<?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
+<!-- Token: <?= $token ?> -->
+<p>
+    Are you sure you wish to reject this license request?<br />
+
+</p>
+<?= $this->partial('mkdf/core/partial/actions', [
+    'buttons'=>[
+        [
+            'type'=>'primary',
+            'label'=>'Yes, reject this request',
+            'target'=> 'dataset-policies',
+            'params'=>
+                [
+                    'id' => $dataset->id,
+                    'action' => 'reject'
+                ],
+            'query' =>
+                [
+                    'request' => $request,
+                    'token' => $token
+                ]
+        ],
+        ['type'=>'danger','label'=>'No, go back please', 'target'=> 'dataset-policies', 'params'=> ['id' => $dataset->id, 'action' => 'index']]]
+] ); ?>
+

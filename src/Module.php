@@ -7,14 +7,17 @@
 
 namespace MKDF\Policies;
 
-use MKDF\Core\Service\AccountFeatureManagerInterface;
+use MKDF\Datasets\Service\DatasetsFeatureManagerInterface;
+use MKDF\Policies\Feature\PoliciesFeature;
 use Zend\Mvc\MvcEvent;
 
 class Module
 {
     public function getConfig()
     {
-        return include __DIR__ . '/../config/module.config.php';
+        $config = [];
+        $moduleConfig = include __DIR__ . '/../config/module.config.php';
+        return $moduleConfig;
     }
 
     /**
@@ -23,6 +26,7 @@ class Module
      */
     public function onBootstrap(MvcEvent $event)
     {
-
+        $featureManager = $event->getApplication()->getServiceManager()->get(DatasetsFeatureManagerInterface::class);
+        $featureManager->registerFeature($event->getApplication()->getServiceManager()->get(PoliciesFeature::class));
     }
 }
