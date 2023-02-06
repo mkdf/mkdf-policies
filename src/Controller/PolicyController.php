@@ -748,18 +748,9 @@ class PolicyController extends AbstractActionController
         }
 
         $emptyPolicy = [
-            'dataset' => [
-                'active' => [],
-                'inactive' => []
-            ],
-            'document' => [
-                'active' => [],
-                'inactive' => []
-            ],
-            'file' => [
-                'active' => [],
-                'inactive' => []
-            ],
+            'dataset' => [],
+            'document' => [],
+            'file' => [],
             'custom' => []
         ];
 
@@ -1008,6 +999,7 @@ class PolicyController extends AbstractActionController
         return $request;
     }
 
+
     public function rejectAction() {
         $user_id = $this->currentUser()->getId();
         $user_email = $this->currentUser()->getEmail();
@@ -1023,20 +1015,36 @@ class PolicyController extends AbstractActionController
 
         $actions = [];
 
-        if ($can_view && $can_edit) { // Dataset manager
+        if ($can_view && $can_edit) { // **** Dataset manager ****
             if (!is_null($token)) {
                 $container = new Container('reject_token');
                 $valid_token = ($container->reject_token == $token);
                 if ($valid_token) {
-                    // *** Do rejection ***
+                    // *** Do rejection as dataset manager ***
                     // - Load requests object
-                    // - find most recent request in history trail
-                    // - Add additional status line to history
+                    $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+
+                    // - Add additional status line to the head of the request history
+                    $nowTime = time();
+                    $historyEntry = [
+                        'timestamp' => $nowTime,
+                        'type' => 'REJECT',
+                        'title' => 'License request rejected',
+                        'description' => '',
+                    ];
+                    array_unshift($requestObj['history'], $historyEntry);
+
                     // - update overall status of the request
+                    $requestObj['status'] = 'REJECTED';
+
+                    // - write request object back to DB
+                    $requestObj['modifiedAt'] = $nowTime;
+                    $this->_policyRepository->updateLicenseRequest($request, $requestObj);
+
                     // - Notification.
                     // - End of process.
 
-                    $this->flashMessenger()->addMessage("License request rejected");
+                    $this->flashMessenger()->addMessage("License request rejected by dataset manager");
                     return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
                 }
                 else {
@@ -1056,31 +1064,272 @@ class PolicyController extends AbstractActionController
                 ]);
             }
         }
-        if ($can_view && ($can_read || $can_write) && (!$can_edit)){ // Dataset user
-            if (!is_null($token)) {
-                // Do rejection
-                $this->flashMessenger()->addMessage("License offer rejected");
+        else {
+                $this->flashMessenger()->addMessage("Error: You do not have permission to reject license requests on this dataset.");
                 return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
-            }
-            else {
-                $token = uniqid(true);
-                $container = new Container('reject_token');
-                $container->reject_token = $token;
-                return new ViewModel([
-                    'dataset' => $dataset,
-                    'token' => $token,
-                    'request' => $request
-                ]);
-            }
         }
 
     }
 
     public function approveAction() {
-        return new ViewModel([]);
+        $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
+        $id = (int) $this->params()->fromRoute('id', 0);
+        $dataset = $this->_dataset_repository->findDataset($id);
+        $token = $this->params()->fromQuery('token', null);
+        $request = $this->params()->fromQuery('request', null);
+
+        $can_view = $this->_permissionManager->canView($dataset,$user_id);
+        $can_read = $this->_permissionManager->canRead($dataset,$user_id);
+        $can_write = $this->_permissionManager->canWrite($dataset,$user_id);
+        $can_edit = $this->_permissionManager->canEdit($dataset,$user_id);
+
+        $actions = [];
+
+        $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+        $mostRecentRequest = $this->getMostRecentRequest($requestObj['history']);
+
+        if ($can_view && $can_edit) { // **** Dataset manager ****
+            if (!is_null($token)) {
+                $container = new Container('approve_token');
+                $valid_token = ($container->approve_token == $token);
+                if ($valid_token) {
+                    if($this->getRequest()->isPost()) {
+                        $data = $this->params()->fromPost();
+                    }
+                    else {
+                        $this->flashMessenger()->addMessage("Error: Missing form data");
+                        return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+                    }
+                    // *** Do approval as dataset manager ***
+                    // - Load requests object
+                    //Done above
+
+                    // - Add additional status line to the head of the request history
+                    $nowTime = time();
+                    $historyEntry = [
+                        'timestamp' => $nowTime,
+                        'type' => 'APPROVE',
+                        'title' => $data['title'],
+                        'description' => $data['description'],
+                    ];
+                    array_unshift($requestObj['history'], $historyEntry);
+
+                    // - update overall status of the request
+                    $requestObj['status'] = 'APPROVED';
+
+                    // - Add custom license to dataset as per request.
+                    $customLicenseData = [
+                        'licenseTitle' => $data['title'],
+                        'licenseText' => $data['description']
+                    ];
+                    $newLicenseODRL = $this->saveCustomLicense($customLicenseData, $mostRecentRequest['policies'], $dataset->uuid, $id, $user_email);
+                    // Custom license is created. Now needs applying for the scope of the user...
+                    $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $dataset->uuid), True);
+                    $metadata = [];
+                    if (count($metadataResponse) >= 1) {
+                        $metadata = $metadataResponse[0];
+                    }
+                    else {
+                        //the metadata has no '_id', so create it
+                        $metadata['_id'] = $dataset->uuid;
+                    }
+                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $data['title'], true, $user_email, $requestObj['user'], 'dataset', null, time(), 7500000000, $metadata);
+                    $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
+
+                    // - write request object back to DB
+                    $requestObj['modifiedAt'] = $nowTime;
+                    $this->_policyRepository->updateLicenseRequest($request, $requestObj);
+
+
+                    // - Notification.
+                    // - End of process.
+
+                    $this->flashMessenger()->addMessage("License request approved by dataset manager");
+                    return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+                }
+                else {
+                    $this->flashMessenger()->addMessage("Error: invalid token supplied");
+                    return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+                }
+
+            }
+            else {
+                $token = uniqid(true);
+                $container = new Container('approve_token');
+                $container->approve_token = $token;
+
+                return new ViewModel([
+                    'dataset' => $dataset,
+                    'token' => $token,
+                    'request' => $request,
+                    'requestObj' => $requestObj,
+                    'mostRecentRequest' => $mostRecentRequest,
+                    'agent' => 'manager'
+                ]);
+            }
+        }
+        elseif ($requestObj['user'] == $user_email){
+            if (!is_null($token)) {
+                $container = new Container('approve_token');
+                $valid_token = ($container->approve_token == $token);
+                if ($valid_token) {
+                    if ($this->getRequest()->isPost()) {
+                        $data = $this->params()->fromPost();
+                    } else {
+                        $this->flashMessenger()->addMessage("Error: Missing form data");
+                        return $this->redirect()->toRoute('dataset-policies', ['action' => 'requests', 'id' => $dataset->id]);
+                    }
+                    // - Add additional status line to the head of the request history
+                    $nowTime = time();
+                    $historyEntry = [
+                        'timestamp' => $nowTime,
+                        'type' => 'APPROVE',
+                        'title' => $data['title'],
+                        'description' => $data['description'],
+                    ];
+                    array_unshift($requestObj['history'], $historyEntry);
+
+                    // - update overall status of the request
+                    $requestObj['status'] = 'APPROVED';
+
+                    // - Add custom license to dataset as per request.
+                    $customLicenseData = [
+                        'licenseTitle' => $data['title'],
+                        'licenseText' => $data['description']
+                    ];
+                    $newLicenseODRL = $this->saveCustomLicense($customLicenseData, $mostRecentRequest['policies'], $dataset->uuid, $id, $user_email);
+                    // Custom license is created. Now needs applying for the scope of the user...
+                    $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $dataset->uuid), True);
+                    $metadata = [];
+                    if (count($metadataResponse) >= 1) {
+                        $metadata = $metadataResponse[0];
+                    }
+                    else {
+                        //the metadata has no '_id', so create it
+                        $metadata['_id'] = $dataset->uuid;
+                    }
+                    $newMetadata = $this->addLicenseToMetadata($dataset->uuid, $data['title'], true, $mostRecentRequest['manager'], $requestObj['user'], 'dataset', null, time(), 7500000000, $metadata);
+                    $this->_repository->updateDocument($this->_config['mkdf-stream']['dataset-metadata'],json_encode($newMetadata), $metadata['_id']);
+
+                    // - write request object back to DB
+                    $requestObj['modifiedAt'] = $nowTime;
+                    $this->_policyRepository->updateLicenseRequest($request, $requestObj);
+
+
+                    // - Notification.
+                    // - End of process.
+
+                    $this->flashMessenger()->addMessage("License request accepted and approved");
+                    return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+                }
+            }
+            else {
+                $token = uniqid(true);
+                $container = new Container('approve_token');
+                $container->approve_token = $token;
+
+                return new ViewModel([
+                    'dataset' => $dataset,
+                    'token' => $token,
+                    'request' => $request,
+                    'requestObj' => $requestObj,
+                    'mostRecentRequest' => $mostRecentRequest,
+                    'agent' => 'user'
+                ]);
+            }
+
+        }
+        else {
+            $this->flashMessenger()->addMessage("Error: You do not have permission to approve license requests on this dataset.");
+            return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+        }
+
     }
 
     public function counterAction() {
-        return new ViewModel([]);
+        $user_id = $this->currentUser()->getId();
+        $user_email = $this->currentUser()->getEmail();
+        $id = (int) $this->params()->fromRoute('id', 0);
+        $dataset = $this->_dataset_repository->findDataset($id);
+        $token = $this->params()->fromQuery('token', null);
+        $request = $this->params()->fromQuery('request', null);
+
+        $can_view = $this->_permissionManager->canView($dataset,$user_id);
+        $can_read = $this->_permissionManager->canRead($dataset,$user_id);
+        $can_write = $this->_permissionManager->canWrite($dataset,$user_id);
+        $can_edit = $this->_permissionManager->canEdit($dataset,$user_id);
+
+        $actions = [];
+
+        if ($can_view && $can_edit) { // **** Dataset manager ****
+            if($this->getRequest()->isPost()) {
+                $data = $this->params()->fromPost();
+                // - Load requests object
+                $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+                $mostRecentRequest = $this->getMostRecentRequest($requestObj['history']);
+
+                // - Add additional status line to the head of the request history
+                $nowTime = time();
+                $historyEntry = [
+                    'timestamp' => $nowTime,
+                    'type' => 'COUNTER OFFER',
+                    'title' => $data['licenseTitle'],
+                    'description' => $data['licenseText'],
+                    'policies' => json_decode($data['policies']),
+                    'manager' => $user_email
+                ];
+
+                array_unshift($requestObj['history'], $historyEntry);
+
+                // - update overall status of the request
+                $requestObj['status'] = 'COUNTER OFFER';
+
+                // - write request object back to DB
+                $requestObj['modifiedAt'] = $nowTime;
+                $this->_policyRepository->updateLicenseRequest($request, $requestObj);
+
+                // - Notification.
+                // - End of process.
+
+                $this->flashMessenger()->addMessage("License counter offer submitted to user");
+                return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+            }
+            else {
+                $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+                $mostRecentRequest = $this->getMostRecentRequest($requestObj['history']);
+                $allPolicies = $this->_policyRepository->getAllPolicies();
+                return new ViewModel([
+                    'dataset' => $dataset,
+                    'features' => $this->datasetsFeatureManager()->getFeatures($id),
+                    'request' => $request,
+                    'requestObj' => $requestObj,
+                    'mostRecentRequest' => $mostRecentRequest,
+                    'allPolicies' => $allPolicies
+                ]);
+            }
+
+        }
+        else {
+            $this->flashMessenger()->addMessage("Error: You do not have permission to manage license requests on this dataset.");
+            return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+        }
+
     }
+
+    private function getMostRecentRequest($history){
+        // Find most recent license request in history
+        $found = false;
+        $mostRecentRequest = [];
+        foreach ($history as $historyEntry) {
+            if (!$found) {
+                if (($historyEntry['type'] == "REQUEST") || ($historyEntry['type'] == "COUNTER OFFER") || ($historyEntry['type'] == "COUNTER REQUEST")) {
+                    $found = true;
+                    $mostRecentRequest = $historyEntry;
+                }
+            }
+        }
+        return $mostRecentRequest;
+    }
+
 }

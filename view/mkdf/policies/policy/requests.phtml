@@ -1,6 +1,107 @@
 <h1><?= $dataset->title ?></h1>
 <div class="container">
 
+
+    <!-- *** MODAL - REQUEST HISTORY ITEM VIEW *** -->
+    <div class="modal fade bd-example-modal-lg" id="historyItemModal" tabindex="-1" aria-labelledby="historyItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="historyItemModalLabel">License request details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span id="historyItemModalContent">
+                        ...
+                    </span>
+
+                    <div class="row" id="policiesRow">
+                        <div class="col-md-4">
+                            <h6>Permissions
+                                <a href='#' class='text-secondary' data-toggle='modal' data-target='#permissionModal'><i class='fas fa-info-circle'></i></a>
+                            </h6>
+                            <ul class="list-group" id="permissionList">
+                                <li class="list-group-item">
+                                    <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                                    Private use
+                                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                                    Distribution
+                                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                                    Modification
+                                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Obligations
+                                <a href='#' class='text-secondary' data-toggle='modal' data-target='#obligationModal'><i class='fas fa-info-circle'></i></a>
+                            </h6>
+                            <ul class="list-group" id="obligationList">
+                                <li class="list-group-item">
+                                <span class="text-info">
+                                    <i class="fas fa-exclamation-circle"></i></span>
+                                    Attribution
+                                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </li>
+                                <li class="list-group-item"><span class="text-info">
+                                    <i class="fas fa-exclamation-circle"></i></span>
+                                    Liability
+                                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Prohibitions
+                                <a href='#' class='text-secondary' data-toggle='modal' data-target='#prohibitionModal'><i class='fas fa-info-circle'></i></a>
+                            </h6>
+                            <ul class="list-group" id="prohibitionList">
+                                <li class="list-group-item">
+                                    <span class="text-danger"><i class="fas fa-times-circle"></i></span>
+                                    Commercial use
+                                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <span class="text-danger"><i class="fas fa-times-circle"></i></span>
+                                    Modification
+                                    <a href="#" class="text-secondary" data-toggle="modal" data-target="#viewModal">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- *** [END] MODAL - LICENSE VIEW *** -->
+
+
     <div class="row">
         <div class="col-md-3">
             <?= $this->partial('mkdf/datasets/partial/dataset-features', ['features' => $features, 'dataset_id' => $dataset->id] ) ?>
@@ -63,16 +164,20 @@
                                         <div class="card-header" id="<?= ('heading-'.$historyItem['timestamp']) ?>">
                                             <h5 class="mb-0">
                                                 <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#<?= ('collapse-'.$historyItem['timestamp']) ?>" aria-expanded="true" aria-controls="<?= ('collapse-'.$historyItem['timestamp']) ?>">
-                                                    <?= date('Y/m/d H:i',$historyItem['timestamp']) ?>
+                                                    <?= $historyItem['type'] ?>
                                                 </button>
                                             </h5>
                                         </div>
 
                                         <div id="<?= ('collapse-'.$historyItem['timestamp']) ?>" class="collapse" aria-labelledby="<?= ('heading-'.$historyItem['timestamp']) ?>" data-parent="#accordionExample">
                                             <div class="card-body">
-                                                <?= $historyItem['type'] ?><br />
-                                                <?= $historyItem['title'] ?><br />
-                                                <?= $historyItem['description'] ?><br />
+
+                                                <em><?= date('Y/m/d H:i',$historyItem['timestamp']) ?></em><br />
+                                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#historyItemModal" onclick="loadHistoryItem('<?= htmlspecialchars(json_encode($historyItem)) ?>')">
+                                                    <i class="fas fa-search"></i> View
+                                                </button>
+                                                <!--<?= $historyItem['title'] ?><br />-->
+                                                <!--<?= $historyItem['description'] ?><br />-->
                                             </div>
                                         </div>
                                     </div>
@@ -163,3 +268,141 @@
     </div>
 
 </div>
+
+<script>
+    function loadHistoryItem(JSONInput) {
+        historyItem = JSON.parse(JSONInput);
+        $("#permissionList").empty();
+        $("#obligationList").empty();
+        $("#prohibitionList").empty();
+
+        const showPoliciesTypes = ["REQUEST", "COUNTER OFFER", "COUNTER REQUEST"];
+        if (showPoliciesTypes.includes(historyItem['type'])) {
+            $("#policiesRow").show();
+            renderPermissions(historyItem['policies']['permissions']);
+            renderObligations(historyItem['policies']['obligations']);
+            renderProhibitions(historyItem['policies']['prohibitions']);
+        }
+        else {
+            $("#policiesRow").hide();
+        }
+        var newDate = new Date();
+        newDate.setTime(historyItem['timestamp']*1000);
+        dateString = newDate.toUTCString();
+
+        historyHTML = "<strong>Action : </strong>" + historyItem['type'] + "<br />";
+        historyHTML += "<strong>Date: </strong>" + dateString + "<br />";
+
+        switch(historyItem['type']) {
+            case 'REQUEST':
+                historyHTML += "<strong>Request title: </strong>" + historyItem['title'] + "<br />";
+                historyHTML += "<strong>Request description: </strong>" + historyItem['description'] + "<br />";
+                historyHTML += "<hr />";
+                break;
+            case 'APPROVE':
+                historyHTML += "<strong>New license title: </strong>" + historyItem['title'] + "<br />";
+                historyHTML += "<strong>Description and notes: </strong>" + historyItem['description'] + "<br />";
+                historyHTML += "<em>This license is now available to select when registering API keys on this dataset.</em>"
+                break;
+            case 'REJECT':
+                historyHTML += "<strong>Rejection reason: </strong>" + historyItem['title'] + "<br />";
+                historyHTML += "<strong>Description and notes: </strong>" + historyItem['description'] + "<br />";
+                break;
+            case 'COUNTER OFFER':
+                historyHTML += "<strong>License title: </strong>" + historyItem['title'] + "<br />";
+                historyHTML += "<strong>Description and notes: </strong>" + historyItem['description'] + "<br />";
+                historyHTML += "<hr />";
+                break;
+            case 'COUNTER REQUEST':
+                historyHTML += "<strong>Request title: </strong>" + historyItem['title'] + "<br />";
+                historyHTML += "<strong>Request description: </strong>" + historyItem['description'] + "<br />";
+                historyHTML += "<hr />";
+                break;
+            default:
+            // code block
+        }
+
+        $("#historyItemModalContent").html(historyHTML);
+        //console.log(historyItem);
+    }
+
+    function renderPermissions(permissions) {
+        //console.log(permissions);
+        $("#permissionList").empty();
+        if (Array.isArray(permissions)) {
+            modalText = '';
+            for (i = 0; i < permissions.length; i++) {
+                liText = "<li class='list-group-item'> <span class='text-success'> <i class='fas fa-check-circle'></i></span>";
+                liText += " " + getShortName(permissions[i].action[0]) + " ";
+                if (i > 0) {
+                    modalText += "<hr />";
+                }
+                modalText += "<h6>" + permissions[i].action[0] + "</h6>";
+                modalText += "<p><em>permission description</em></p>";
+
+                if (Array.isArray(permissions[i].duty)) {
+                    liText += "<a href='#' class='text-warning' data-toggle='tooltip' data-placement='top' title='One or more duties are attached to this permission policy'>";
+                    liText += "<i class='fas fa-exclamation-circle'></i></a>";
+                    modalText += "<p> <span class='text-danger'><i class='fas fa-exclamation-circle'></i></span> The following duties are attached to this permission:<br />";
+                    for (j = 0; j < permissions[i].duty.length; j++) {
+                        modalText += "<em>" + permissions[i].duty[j] + "</em><br />";
+                    }
+                    modalText += "</p>";
+
+                }
+                $("#permissionList").append(liText);
+                //$("#permissionModalContent").html(modalText);
+            }
+        }
+    }
+
+    function renderObligations(obligations) {
+        $("#obligationList").empty();
+        if (Array.isArray(obligations)) {
+            modalText = '';
+            for (i = 0; i < obligations.length; i++) {
+                liText = "<li class='list-group-item'> <span class='text-info'> <i class='fas fa-exclamation-circle'></i></span>";
+                liText += " " + getShortName(obligations[i].action[0]) + " ";
+                if (i > 0) {
+                    modalText += "<hr />";
+                }
+                modalText += "<h6>" + obligations[i].action[0] + "</h6>";
+                modalText += "<p><em>obligation description</em></p>";
+                $("#obligationList").append(liText);
+                //$("#obligationModalContent").html(modalText);
+
+            }
+        }
+    }
+
+    function renderProhibitions(prohibitions) {
+        $("#prohibitionList").empty();
+        if (Array.isArray(prohibitions)) {
+            modalText = '';
+            for (i = 0; i < prohibitions.length; i++) {
+                liText = "<li class='list-group-item'> <span class='text-danger'> <i class='fas fa-times-circle'></i></span>";
+                liText += " " + getShortName(prohibitions[i].action[0]) + " ";
+                if (i > 0) {
+                    modalText += "<hr />";
+                }
+                modalText += "<h6>" + prohibitions[i].action[0] + "</h6>";
+                modalText += "<p><em>prohibition description</em></p>";
+                $("#prohibitionList").append(liText);
+                //$("#prohibitionModalContent").html(modalText);
+            }
+        }
+    }
+
+    function getShortName(input) {
+        position = input.lastIndexOf('#');
+        if (position < 0){
+            position = input.lastIndexOf(':');
+        }
+        if (position < 0) {
+            return input;
+        }
+        else {
+            return input.substring(position + 1);
+        }
+    }
+</script>

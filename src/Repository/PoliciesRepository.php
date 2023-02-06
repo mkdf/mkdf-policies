@@ -366,6 +366,14 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         //var_dump($returnObj);
     }
 
+    public function updateLicenseRequest($requestId, $request) {
+        $requestsDataset = $this->_config['mkdf-policies']['policies-requests-dataset'];
+        $requestsKey = $this->_config['mkdf-policies']['policies-key'];
+
+
+        $this->_repository->updateDocument($requestsDataset,json_encode($request), $requestId);
+    }
+
     public function getDatasetLicenseRequests ($datasetUuid, $user = null, $creationCheck = True) {
         $requestsDataset = $this->_config['mkdf-policies']['policies-requests-dataset'];
         $requestsKey = $this->_config['mkdf-policies']['policies-key'];
@@ -392,5 +400,17 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         $queryJSON = json_encode($query);
         //print($queryJSON);
         return json_decode($this->_repository->getDocuments($this->_config['mkdf-policies']['policies-requests-dataset'],1000,$key,$queryJSON), True);
+    }
+
+    public function getSingleDatasetLicenseRequest ($datasetUuid, $requestId) {
+        $requestsDataset = $this->_config['mkdf-policies']['policies-requests-dataset'];
+        $requestsKey = $this->_config['mkdf-policies']['policies-key'];
+
+        $query = [
+            'dataset' => $datasetUuid,
+            '_id' => $requestId
+        ];
+        $queryJSON = json_encode($query);
+        return json_decode($this->_repository->getDocuments($requestsDataset,1,$requestsKey,$queryJSON), True)[0];
     }
 }

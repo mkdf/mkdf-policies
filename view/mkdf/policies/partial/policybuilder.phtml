@@ -64,14 +64,14 @@
 <!-- ******************* -->
 
 
-<h4>Request a license</h4>
+<h4><?= $this->heading ?></h4>
 <form method="post" id="mainform" action="<?= $this->formSubmitUrl ?>">
     <div class="form-group">
-        <label for="licenseTitle">License request reason: describe your request in a few words</label>
-        <input type="text" class="form-control" id="licenseTitle" name="licenseTitle" placeholder="request reason">
+        <label for="licenseTitle"><?= $this->titleLabel ?></label>
+        <input type="text" class="form-control" id="licenseTitle" name="licenseTitle" placeholder="">
     </div>
     <div class="form-group">
-        <label for="licenseText">Please provide more detailed information about your request here if appropriate</label>
+        <label for="licenseText"><?= $this->descriptionLabel ?></label>
         <textarea class="form-control" id="licenseText" name="licenseText" rows="4"></textarea>
     </div>
 
@@ -141,7 +141,11 @@
 
     <!-- <button type="submit" class="btn btn-primary">Save</button> -->
     <input type="hidden" id="policies" name="policies" value="">
-    <button id="saveButton" class="btn btn-primary btn-sm align-baseline"><i class="fas fa-play"></i> Save</button>
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <button id="saveButton" class="btn btn-primary align-baseline"><?= $submitLabel ?></button>
+        <a class="btn btn-danger" href="<?= $this->returnURL ?>">Cancel, return to license requests</a>
+    </div>
+
 
 </form>
 

@@ -1,37 +1,66 @@
 <?php
 $policies = $mostRecentRequest['policies'];
 ?>
-<h1>Approve license request</h1>
+<?php if ($agent == 'manager'): ?>
+    <h1>Approve license request</h1>
+<?php else: ?>
+    <h1>Accept license counter offer</h1>
+<?php endif; ?>
+
 <?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
 <!-- Token: <?= $token ?> -->
+
 <p>
-    Are you sure you wish to approve this license request?<br />
+    <?php if ($agent == 'manager'): ?>
+        Are you sure you wish to approve this license request?<br />
+    <?php else: ?>
+        Are you sure you wish to accept this license counter offer?<br />
+    <?php endif; ?>
 
 </p>
 <p>
-    A custom license will be created and made available to the user for use on this dataset.
-    Please specify a title and description for the custom license below.
+    <?php if ($agent == 'manager'): ?>
+        A custom license will be created and made available to the user for use on this dataset.
+        Please specify a title and description for the custom license below.
+    <?php else: ?>
+        A custom license will be created and made available to you for use on this dataset.
+    <?php endif; ?>
+
 </p>
 <hr />
 <form method="post" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $requestObj['_id'], 'token' => $token]]) ?>">
     <div class="form-group">
         <label for="title">License title</label>
-        <input type="text" class="form-control" id="title" name="title" aria-describedby="titleHelp" placeholder="The title of the custom license">
-        <small id="titleHelp" class="form-text text-muted">Provide a title for the custom license</small>
+        <?php if ($agent == 'manager'): ?>
+            <input type="text" class="form-control" id="title" name="title" aria-describedby="titleHelp" placeholder="The title of the custom license">
+            <small id="titleHelp" class="form-text text-muted">Provide a title for the custom license</small>
+        <?php else: ?>
+            <input type="text" class="form-control" id="title" name="title" aria-describedby="titleHelp" value="<?= $mostRecentRequest['title'] ?>" readonly>
+        <?php endif; ?>
+
     </div>
     <div class="form-group">
         <label for="description">Description and/or license comments</label>
-        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+        <textarea class="form-control" id="description" name="description" rows="3" readonly><?= $mostRecentRequest['description'] ?></textarea>
     </div>
 
 
 <hr />
-<h4>Request details</h4>
+    <?php if ($agent == 'manager'): ?>
+        <h4>Request details</h4>
+        <strong>User: </strong><?= $requestObj['user'] ?><br />
+        <strong>Date: </strong><?= date('Y/m/d H:i',$mostRecentRequest['timestamp']) ?><br />
+        <strong>Request: </strong><?= $mostRecentRequest['title'] ?><br />
+        <strong>Description: </strong><?= $mostRecentRequest['description'] ?><br />
+    <?php else: ?>
+        <h4>Counter offer details</h4>
+        <strong>Date: </strong><?= date('Y/m/d H:i',$mostRecentRequest['timestamp']) ?><br />
+        <strong>License title: </strong><?= $mostRecentRequest['title'] ?><br />
+        <strong>License description: </strong><?= $mostRecentRequest['description'] ?><br />
+    <?php endif; ?>
+
 <p>
-    <strong>User: </strong><?= $requestObj['user'] ?><br />
-    <strong>Date: </strong><?= date('Y/m/d H:i',$mostRecentRequest['timestamp']) ?><br />
-    <strong>Request: </strong><?= $mostRecentRequest['title'] ?><br />
-    <strong>Description: </strong><?= $mostRecentRequest['description'] ?><br />
+
 
 
 
@@ -41,8 +70,14 @@ $policies = $mostRecentRequest['policies'];
 <hr />
 
 
+
     <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="submit" class="btn btn-primary">Approve this request</button>
+        <?php if ($agent == 'manager'): ?>
+            <button type="submit" class="btn btn-primary">Approve this request</button>
+        <?php else: ?>
+            <button type="submit" class="btn btn-primary">Accept this counter offer</button>
+        <?php endif; ?>
+
         <a class="btn btn-danger" href="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'requests'],['query' => []]) ?>">Cancel, return to license requests</a>
     </div>
 
