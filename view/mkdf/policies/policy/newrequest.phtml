@@ -20,8 +20,12 @@
                 'index' => false,
                 'newrequest' => true,
                 'requests' => false,
-                'dataset' => $dataset
+                'dataset' => $dataset,
+                'agent' => 'user'
             ];
+            if ($can_edit) {
+                $activeTab['agent'] == 'manager';
+            }
             ?>
             <?= $this->partial('mkdf/policies/partial/navtabs', $activeTab); ?>
 

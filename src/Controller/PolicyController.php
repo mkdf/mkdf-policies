@@ -1015,14 +1015,16 @@ class PolicyController extends AbstractActionController
 
         $actions = [];
 
+        // - Load requests object
+        $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+
         if ($can_view && $can_edit) { // **** Dataset manager ****
             if (!is_null($token)) {
                 $container = new Container('reject_token');
                 $valid_token = ($container->reject_token == $token);
                 if ($valid_token) {
                     // *** Do rejection as dataset manager ***
-                    // - Load requests object
-                    $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+
 
                     // - Add additional status line to the head of the request history
                     $nowTime = time();
@@ -1060,7 +1062,58 @@ class PolicyController extends AbstractActionController
                 return new ViewModel([
                     'dataset' => $dataset,
                     'token' => $token,
-                    'request' => $request
+                    'request' => $request,
+                    'agent' => 'manager'
+                ]);
+            }
+        }
+        elseif ($requestObj['user'] == $user_email) {
+            if (!is_null($token)) {
+                $container = new Container('reject_token');
+                $valid_token = ($container->reject_token == $token);
+                if ($valid_token) {
+                    // *** Do rejection as dataset user ***
+                    // - Load requests object
+                    $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+
+                    // - Add additional status line to the head of the request history
+                    $nowTime = time();
+                    $historyEntry = [
+                        'timestamp' => $nowTime,
+                        'type' => 'REJECT',
+                        'title' => 'Counter offer rejected by user '. $user_email,
+                        'description' => '',
+                    ];
+                    array_unshift($requestObj['history'], $historyEntry);
+
+                    // - update overall status of the request
+                    $requestObj['status'] = 'REJECTED';
+
+                    // - write request object back to DB
+                    $requestObj['modifiedAt'] = $nowTime;
+                    $this->_policyRepository->updateLicenseRequest($request, $requestObj);
+
+                    // - Notification.
+                    // - End of process.
+
+                    $this->flashMessenger()->addMessage("License counter offer rejected by user");
+                    return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+                }
+                else {
+                    $this->flashMessenger()->addMessage("Error: invalid token supplied");
+                    return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+                }
+
+            }
+            else {
+                $token = uniqid(true);
+                $container = new Container('reject_token');
+                $container->reject_token = $token;
+                return new ViewModel([
+                    'dataset' => $dataset,
+                    'token' => $token,
+                    'request' => $request,
+                    'agent' => 'user'
                 ]);
             }
         }

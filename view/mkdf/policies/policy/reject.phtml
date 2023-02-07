@@ -1,15 +1,27 @@
-<h1>Reject license request</h1>
+<?php if ($agent == 'manager'): ?>
+    <h1>Reject license request</h1>
+<?php else: ?>
+    <h1>Reject counter offer</h1>
+<?php endif; ?>
+
 <?= $this->partial('mkdf/core/partial/messages', ['messages' => $messages] ) ?>
 <!-- Token: <?= $token ?> -->
 <p>
+<?php if ($agent == 'manager'): ?>
     Are you sure you wish to reject this license request?<br />
+    <?php $buttonLabel = "Yes, reject this request"; ?>
+<?php else: ?>
+    Are you sure you wish to reject this license counter offer?<br />
+    <?php $buttonLabel = "Yes, reject this counter offer"; ?>
+<?php endif; ?>
+
 
 </p>
 <?= $this->partial('mkdf/core/partial/actions', [
     'buttons'=>[
         [
-            'type'=>'primary',
-            'label'=>'Yes, reject this request',
+            'type'=> 'primary',
+            'label'=> $buttonLabel,
             'target'=> 'dataset-policies',
             'params'=>
                 [

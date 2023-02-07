@@ -8,9 +8,11 @@
         <a class="<?= $indexClass ?>" href="<?= $this->url( 'dataset-policies', ['id'=>$this->dataset->id, 'action'=>'index'],[]); ?>">
             View licenses</a>
     </li>
+    <?php if($this->agent == 'user'): ?>
     <li class="nav-item" role="presentation">
         <a class="<?= $newrequestClass ?>" href="<?= $this->url( 'dataset-policies', ['id'=>$this->dataset->id, 'action'=>'newrequest'],[]); ?>">Request new license</a>
     </li>
+    <?php endif; ?>
     <li class="nav-item" role="presentation">
         <a class="<?= $requestsClass ?>" href="<?= $this->url( 'dataset-policies', ['id'=>$this->dataset->id, 'action'=>'requests'],[]); ?>">License requests</a>
     </li>
