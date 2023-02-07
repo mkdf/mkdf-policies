@@ -41,7 +41,11 @@ $policies = $mostRecentRequest['policies'];
     </div>
     <div class="form-group">
         <label for="description">Description and/or license comments</label>
-        <textarea class="form-control" id="description" name="description" rows="3" readonly><?= $mostRecentRequest['description'] ?></textarea>
+        <?php if ($agent == 'manager'): ?>
+            <textarea class="form-control" id="description" name="description" rows="3" ></textarea>
+        <?php else: ?>
+            <textarea class="form-control" id="description" name="description" rows="3" readonly><?= $mostRecentRequest['description'] ?></textarea>
+        <?php endif; ?>
     </div>
 
 

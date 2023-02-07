@@ -18,11 +18,21 @@
             <div class="row">
                 <div class="col-md-12">
                     <?php
-                    $heading = "Make a license counter offer";
-                    $titleLabel = "Counter offer license title";
-                    $descriptionLabel = "Counter offer license description";
-                    $submitLabel = "Make counter offer";
-                    $returnURL = $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'requests'],[]);
+                    if ($agent == 'manager') {
+                        $heading = "Make a license counter offer";
+                        $titleLabel = "Counter offer license title";
+                        $descriptionLabel = "Counter offer license description";
+                        $submitLabel = "Make counter offer";
+                        $returnURL = $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'requests'],[]);
+                    }
+                    else {
+                        $heading = "Make a license counter offer";
+                        $titleLabel = "Counter request message";
+                        $descriptionLabel = "Counter request description and notes";
+                        $submitLabel = "Make counter request";
+                        $returnURL = $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'requests'],[]);
+                    }
+
 
                     $policybuilderParams = [
                         'formSubmitUrl' =>  $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'counter'],['query' => ['request' => $request]]),
@@ -41,12 +51,24 @@
 
 
                     <hr />
-                    <h4>Previous request details</h4>
-                    <p>
-                        <strong>User: </strong><?= $requestObj['user'] ?><br />
-                        <strong>Date: </strong><?= date('Y/m/d H:i',$mostRecentRequest['timestamp']) ?><br />
-                        <strong>Request: </strong><?= $mostRecentRequest['title'] ?><br />
-                        <strong>Description: </strong><?= $mostRecentRequest['description'] ?><br />
+                    <?php if ($agent == 'manager'): ?>
+                        <h4>Previous request details</h4>
+                        <p>
+                            <strong>User: </strong><?= $requestObj['user'] ?><br />
+                            <strong>Date: </strong><?= date('Y/m/d H:i',$mostRecentRequest['timestamp']) ?><br />
+                            <strong>Request: </strong><?= $mostRecentRequest['title'] ?><br />
+                            <strong>Description: </strong><?= $mostRecentRequest['description'] ?><br />
+                        </p>
+                    <?php else: ?>
+                        <h4>Previous counter offer details</h4>
+                        <p>
+                            <!--<strong>User: </strong><?= $requestObj['user'] ?><br />-->
+                            <strong>Date: </strong><?= date('Y/m/d H:i',$mostRecentRequest['timestamp']) ?><br />
+                            <strong>License title: </strong><?= $mostRecentRequest['title'] ?><br />
+                            <strong>License Description: </strong><?= $mostRecentRequest['description'] ?><br />
+                        </p>
+                    <?php endif; ?>
+
 
 
 

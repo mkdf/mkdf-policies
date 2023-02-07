@@ -1315,12 +1315,13 @@ class PolicyController extends AbstractActionController
 
         $actions = [];
 
+        // - Load requests object
+        $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+        $mostRecentRequest = $this->getMostRecentRequest($requestObj['history']);
+
         if ($can_view && $can_edit) { // **** Dataset manager ****
             if($this->getRequest()->isPost()) {
                 $data = $this->params()->fromPost();
-                // - Load requests object
-                $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
-                $mostRecentRequest = $this->getMostRecentRequest($requestObj['history']);
 
                 // - Add additional status line to the head of the request history
                 $nowTime = time();
@@ -1358,10 +1359,56 @@ class PolicyController extends AbstractActionController
                     'request' => $request,
                     'requestObj' => $requestObj,
                     'mostRecentRequest' => $mostRecentRequest,
-                    'allPolicies' => $allPolicies
+                    'allPolicies' => $allPolicies,
+                    'agent' => 'manager'
                 ]);
             }
 
+        }
+        elseif ($requestObj['user'] == $user_email) {
+            if($this->getRequest()->isPost()) {
+                $data = $this->params()->fromPost();
+
+                // - Add additional status line to the head of the request history
+                $nowTime = time();
+                $historyEntry = [
+                    'timestamp' => $nowTime,
+                    'type' => 'COUNTER REQUEST',
+                    'title' => $data['licenseTitle'],
+                    'description' => $data['licenseText'],
+                    'policies' => json_decode($data['policies']),
+                    //'manager' => $user_email
+                ];
+
+                array_unshift($requestObj['history'], $historyEntry);
+
+                // - update overall status of the request
+                $requestObj['status'] = 'REQUEST';
+
+                // - write request object back to DB
+                $requestObj['modifiedAt'] = $nowTime;
+                $this->_policyRepository->updateLicenseRequest($request, $requestObj);
+
+                // - Notification.
+                // - End of process.
+
+                $this->flashMessenger()->addMessage("License counter request submitted");
+                return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
+            }
+            else {
+                $requestObj = $this->_policyRepository->getSingleDatasetLicenseRequest ($dataset->uuid, $request);
+                $mostRecentRequest = $this->getMostRecentRequest($requestObj['history']);
+                $allPolicies = $this->_policyRepository->getAllPolicies();
+                return new ViewModel([
+                    'dataset' => $dataset,
+                    'features' => $this->datasetsFeatureManager()->getFeatures($id),
+                    'request' => $request,
+                    'requestObj' => $requestObj,
+                    'mostRecentRequest' => $mostRecentRequest,
+                    'allPolicies' => $allPolicies,
+                    'agent' => 'user'
+                ]);
+            }
         }
         else {
             $this->flashMessenger()->addMessage("Error: You do not have permission to manage license requests on this dataset.");
