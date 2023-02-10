@@ -303,15 +303,15 @@
                 if (i > 0) {
                     modalText += "<hr />";
                 }
-                modalText += "<h6>" + permissions[i].action[0] + "</h6>";
-                modalText += "<p><em>permission description</em></p>";
+                modalText += "<h6>" + getShortName(permissions[i].action[0]) + "</h6>";
+                //modalText += "<p><em>permission description</em></p>";
 
                 if (Array.isArray(permissions[i].duty)) {
                     liText += "<a href='#' class='text-warning' data-toggle='tooltip' data-placement='top' title='One or more duties are attached to this permission policy'>";
                     liText += "<i class='fas fa-exclamation-circle'></i></a>";
                     modalText += "<p> <span class='text-danger'><i class='fas fa-exclamation-circle'></i></span> The following duties are attached to this permission:<br />";
                     for (j = 0; j < permissions[i].duty.length; j++) {
-                        modalText += "<em>" + permissions[i].duty[j] + "</em><br />";
+                        modalText += "<em>" + getShortName(permissions[i].duty[j]) + "</em><br />";
                     }
                     modalText += "</p>";
 
@@ -332,8 +332,8 @@
                 if (i > 0) {
                     modalText += "<hr />";
                 }
-                modalText += "<h6>" + obligations[i].action[0] + "</h6>";
-                modalText += "<p><em>obligation description</em></p>";
+                modalText += "<h6>" + getShortName(obligations[i].action[0]) + "</h6>";
+                //modalText += "<p><em>obligation description</em></p>";
                 $("#obligationList").append(liText);
                 $("#obligationModalContent").html(modalText);
 
@@ -351,8 +351,8 @@
                 if (i > 0) {
                     modalText += "<hr />";
                 }
-                modalText += "<h6>" + prohibitions[i].action[0] + "</h6>";
-                modalText += "<p><em>prohibition description</em></p>";
+                modalText += "<h6>" + getShortName(prohibitions[i].action[0]) + "</h6>";
+                //modalText += "<p><em>prohibition description</em></p>";
                 $("#prohibitionList").append(liText);
                 $("#prohibitionModalContent").html(modalText);
             }
