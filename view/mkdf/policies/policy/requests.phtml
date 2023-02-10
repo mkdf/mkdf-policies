@@ -124,9 +124,10 @@
                 'agent' => 'user'
             ];
             if ($can_edit) {
-                $activeTab['agent'] == 'manager';
+                $activeTab['agent'] = 'manager';
             }
             ?>
+
             <?= $this->partial('mkdf/policies/partial/navtabs', $activeTab); ?>
 
             <br />
@@ -135,137 +136,141 @@
                 <div class="col-md-12">
                     <h4>License requests</h4>
 
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                        <tr>
-
-                            <th scope="col">Created</th>
-                            <th scope="col">Last modified</th>
-                            <?php if($can_edit): ?>
-                                <th scope="col">User</th>
-                            <?php endif; ?>
-                            <th scope="col">Request history</th>
-                            <th scope="col">Status</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($requests as $request): ?>
-                        <tr>
-                            <th scope="row"><?= date('Y/m/d H:i',$request['createdAt']) ?></th>
-                            <td><?= date('Y/m/d H:i',$request['modifiedAt']) ?></td>
-                            <?php if($can_edit): ?>
-                                <td><?= $request['user'] ?></td>
-                            <?php endif; ?>
-                            <td>
-                                <div class="accordion" id="accordionExample">
+                    <!-- **** BEGIN ACCORDION **** -->
+                    <div class="accordion" id="accordionRequests">
 
 
+                        <?php
+                        $headerclass="bg-secondary";
+
+                        ?>
 
 
-                                <?php foreach($request['history'] as $historyItem): ?>
-                                    <div class="card">
-                                        <div class="card-header" id="<?= ('heading-'.$historyItem['timestamp']) ?>">
-                                            <h5 class="mb-0">
-                                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#<?= ('collapse-'.$historyItem['timestamp']) ?>" aria-expanded="true" aria-controls="<?= ('collapse-'.$historyItem['timestamp']) ?>">
-                                                    <?= $historyItem['type'] ?>
-                                                </button>
-                                            </h5>
-                                        </div>
-
-                                        <div id="<?= ('collapse-'.$historyItem['timestamp']) ?>" class="collapse" aria-labelledby="<?= ('heading-'.$historyItem['timestamp']) ?>" data-parent="#accordionExample">
-                                            <div class="card-body">
-
-                                                <em><?= date('Y/m/d H:i',$historyItem['timestamp']) ?></em><br />
-                                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#historyItemModal" onclick="loadHistoryItem('<?= htmlspecialchars(json_encode($historyItem)) ?>')">
-                                                    <i class="fas fa-search"></i> View
-                                                </button>
-                                                <!--<?= $historyItem['title'] ?><br />-->
-                                                <!--<?= $historyItem['description'] ?><br />-->
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                                </div>
-
-                            </td>
-
+                        <?php foreach($requests as $request): ?>
                             <?php
                             switch ($request['status']) {
-                                case 'APPROVED':
-                                    $statusClass = 'bg-success';
-                                    break;
                                 case 'REQUEST':
-                                    $statusClass = 'bg-warning';
+                                    $headerclass = "bg-info";
+                                    break;
+                                case 'APPROVED':
+                                    $headerclass = "bg-success";
                                     break;
                                 case 'REJECTED':
-                                    $statusClass = 'bg-danger';
+                                    $headerclass = "bg-danger";
                                     break;
                                 case 'COUNTER OFFER':
-                                    $statusClass = 'bg-warning';
+                                    $headerclass = "bg-warning";
                                     break;
                                 case 'COUNTER REQUEST':
-                                    $statusClass = 'bg-warning';
+                                    $headerclass = "bg-warning";
                                     break;
-
-                                default:
-                                    $statusClass = 'bg-warning';
                             }
                             ?>
 
-                            <td class="<?= $statusClass ?>"><?= $request['status'] ?></td>
-                            <td>
-                                <!--<div class="btn-group" role="group" aria-label="Basic example">-->
-                                    <!-- <a class="btn btn-warning" href="#" role="button"><i class="fas fa-edit"></i> Modify license</a> -->
+                            <div class="card">
+                                <div class="card-header <?= $headerclass ?>" id="<?= ('heading-'.$request['createdAt']) ?>">
+                                    <h5 class="mb-0">
+                                        <button class="btn text-white collapsed" type="button" data-toggle="collapse" data-target="#<?= ('collapse-'.$request['createdAt']) ?>" aria-expanded="true" aria-controls="<?= ('collapse-'.$request['createdAt']) ?>">
+                                            <?= date('Y/m/d H:i',$request['createdAt']) ?> ::
+                                            <?php if($can_edit): ?>
+                                                <?= $request['user'] ?> ::
+                                            <?php endif; ?>
+                                            <?= $request['status'] ?>
+                                        </button>
+                                    </h5>
+                                </div>
 
-                                <?php
-                                    // Determine appropriate actions here based on current status and also whether user/manager.
-                                    if ($can_edit){ // Dataset Manager
-                                        switch ($request['status']) {
-                                            case 'REQUEST':
-                                                // approve, reject, counter offer
-                                                $button = '<a class="btn btn-primary" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-up"></i> Approve</a>';
-                                                print($button.'<br />');
-                                                $button = '<a class="btn btn-danger" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'reject'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-down"></i> Reject</a>';
-                                                print($button.'<br />');
-                                                $button = '<a class="btn btn-warning" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'counter'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-reply"></i> Counter offer</a>';
-                                                print($button);
-                                                break;
-                                            case 'COUNTER REQUEST':
-                                                // approve, reject, counter offer
-                                                $button = '<a class="btn btn-primary" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-up"></i> Approve</a>';
-                                                print($button.'<br />');
-                                                $button = '<a class="btn btn-danger" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'reject'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-down"></i> Reject</a>';
-                                                print($button.'<br />');
-                                                $button = '<a class="btn btn-warning" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'counter'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-reply"></i> Counter offer</a>';
-                                                print($button);
-                                                break;
-                                            default:
-                                                //No actions
+                                <div id="<?= ('collapse-'.$request['createdAt']) ?>" class="collapse" aria-labelledby="<?= ('heading-'.$request['createdAt']) ?>" data-parent="#accordionRequests">
+                                    <div class="card-body">
+
+                                        <strong>Request created: </strong><em><?= date('Y/m/d H:i',$request['createdAt']) ?></em><br />
+                                        <strong>Request last updated: </strong><em><?= date('Y/m/d H:i',$request['modifiedAt']) ?></em><br />
+                                        <strong>Current status: </strong><em><?= $request['status'] ?></em><br />
+
+                                        <?php
+                                        // Determine appropriate actions here based on current status and also whether user/manager.
+                                        if ($can_edit){ // Dataset Manager
+                                            switch ($request['status']) {
+                                                case 'REQUEST':
+                                                    // approve, reject, counter offer
+                                                    $button = '<a class="btn btn-primary" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-up"></i> Approve</a>';
+                                                    print($button.' ');
+                                                    $button = '<a class="btn btn-danger" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'reject'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-down"></i> Reject</a>';
+                                                    print($button.' ');
+                                                    $button = '<a class="btn btn-warning" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'counter'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-reply"></i> Counter offer</a>';
+                                                    print($button);
+                                                    break;
+                                                case 'COUNTER REQUEST':
+                                                    // approve, reject, counter offer
+                                                    $button = '<a class="btn btn-primary" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-up"></i> Approve</a>';
+                                                    print($button.' ');
+                                                    $button = '<a class="btn btn-danger" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'reject'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-down"></i> Reject</a>';
+                                                    print($button.' ');
+                                                    $button = '<a class="btn btn-warning" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'counter'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-reply"></i> Counter offer</a>';
+                                                    print($button);
+                                                    break;
+                                                default:
+                                                    //No actions
+                                            }
                                         }
-                                    }
-                                    else { // Dataset User
-                                        switch ($request['status']) {
-                                            case 'COUNTER OFFER':
-                                                // aaccept, reject, counter request
-                                                $button = '<a class="btn btn-primary" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-up"></i> Accept</a>';
-                                                print($button.'<br />');
-                                                $button = '<a class="btn btn-danger" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'reject'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-down"></i> Reject</a>';
-                                                print($button.'<br />');
-                                                $button = '<a class="btn btn-warning" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'counter'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-reply"></i> Counter request</a>';
-                                                print($button);
-                                                break;
-                                            default:
-                                                //No actions
+                                        else { // Dataset User
+                                            switch ($request['status']) {
+                                                case 'COUNTER OFFER':
+                                                    // aaccept, reject, counter request
+                                                    $button = '<a class="btn btn-primary" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'approve'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-up"></i> Accept</a>';
+                                                    print($button.' ');
+                                                    $button = '<a class="btn btn-danger" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'reject'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-thumbs-down"></i> Reject</a>';
+                                                    print($button.' ');
+                                                    $button = '<a class="btn btn-warning" href="'.$this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'counter'],['query' => ['request' => $request['_id']]]).'" role="button"><i class="fas fa-reply"></i> Counter request</a>';
+                                                    print($button);
+                                                    break;
+                                                default:
+                                                    //No actions
+                                            }
                                         }
-                                    }
-                                ?>
-                                <!--</div>-->
-                            </td>
-                        </tr>
+                                        ?>
+
+                                        <hr />
+                                        <strong>Request history</strong>
+                                        <div class="accordion" id="<?= ('accordionHistory-'.$request['createdAt']) ?>">
+
+
+
+
+                                            <?php foreach($request['history'] as $historyItem): ?>
+                                                <div class="card">
+                                                    <div class="card-header bg-secondary" id="<?= ('heading-history-'.$historyItem['timestamp']) ?>">
+                                                        <h5 class="mb-0">
+                                                            <button class="btn text-white collapsed" type="button" data-toggle="collapse" data-target="#<?= ('collapse-history-'.$historyItem['timestamp']) ?>" aria-expanded="true" aria-controls="<?= ('collapse-history-'.$historyItem['timestamp']) ?>">
+                                                                <?= $historyItem['type'] ?>
+                                                            </button>
+                                                        </h5>
+                                                    </div>
+
+                                                    <div id="<?= ('collapse-history-'.$historyItem['timestamp']) ?>" class="collapse" aria-labelledby="<?= ('heading-history-'.$historyItem['timestamp']) ?>" data-parent="#<?= ('accordionHistory-'.$request['createdAt']) ?>">
+                                                        <div class="card-body">
+
+                                                            <em><?= date('Y/m/d H:i',$historyItem['timestamp']) ?></em><br />
+                                                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#historyItemModal" onclick="loadHistoryItem('<?= htmlspecialchars(json_encode($historyItem)) ?>')">
+                                                                <i class="fas fa-search"></i> View
+                                                            </button>
+                                                            <!--<?= $historyItem['title'] ?><br />-->
+                                                            <!--<?= $historyItem['description'] ?><br />-->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
                         <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                    </div>
+                    <!-- **** END ACCORDION **** -->
+
+
                 </div>
             </div>
         </div>

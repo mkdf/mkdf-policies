@@ -129,6 +129,8 @@ class PolicyController extends AbstractActionController
 
         $actions = [];
 
+        $licenseTitles = $this->_policyRepository->getLocalLicenseTitles($dataset->uuid);
+
         if ($can_view && $can_edit) {
 
             $actions = [
@@ -206,7 +208,8 @@ class PolicyController extends AbstractActionController
                 'licenseScope' => $licenseScopeParam,
                 'resourceList' => $resourceList,
                 'resourceId' => $resourceIdParam,
-                'licensesAssigned' => $datasetKeyLicenses
+                'licensesAssigned' => $datasetKeyLicenses,
+                'licenseTitles' => $licenseTitles
             ]);
         }
         elseif ($can_view){
@@ -252,7 +255,8 @@ class PolicyController extends AbstractActionController
                 'licenses' => $licensesDataset,
                 'licensesJson' => $licensesJson,
                 'licensesFile' => $licensesFile,
-                'licensesAssigned' => $userDatasetKeyLicenses
+                'licensesAssigned' => $userDatasetKeyLicenses,
+                'licenseTitles' => $licenseTitles
             ]);
         }
         else{

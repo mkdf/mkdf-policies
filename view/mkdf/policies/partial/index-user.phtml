@@ -20,7 +20,8 @@ $activeTab = [
 <?php foreach ($licensesAssigned as $association): ?>
     <tr>
         <td><?= $association['key'] ?></td>
-        <td><?= $association['license'] ?></td>
+        <!--<td><?= $association['license'] ?></td>-->
+        <td><?= $licenseTitles[$association['license']] ?></td>
     </tr>
 <?php endforeach; ?>
 
@@ -38,7 +39,11 @@ $activeTab = [
     <tr>
         <td><?= $license['schema:title']; ?></td>
         <td>
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#licenseViewModal" onclick="loadLicense('<?= $license['odrl:uid'] ?>', '<?= $dataset->uuid ?>', '<?= $license['schema:title'] ?>')">
+            <button type="button"
+                    class="btn btn-primary btn-sm"
+                    data-toggle="modal"
+                    data-target="#licenseViewModal"
+                    onclick="loadLocalPolicies('<?= htmlspecialchars(json_encode($license)) ?>')">
                 <i class="fas fa-search"></i> View
             </button>
         </td>
@@ -59,7 +64,11 @@ $activeTab = [
             <td><?= $license['resourceID']; ?></td>
             <td><?= $license['schema:title']; ?></td>
             <td>
-                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#licenseViewModal" onclick="loadLicense('<?= $license['odrl:uid'] ?>', '<?= $dataset->uuid ?>', '<?= $license['schema:title'] ?>')">
+                <button type="button"
+                        class="btn btn-primary btn-sm"
+                        data-toggle="modal"
+                        data-target="#licenseViewModal"
+                        onclick="loadLocalPolicies('<?= htmlspecialchars(json_encode($license)) ?>')">
                     <i class="fas fa-search"></i> View
                 </button>
             </td>
@@ -81,7 +90,11 @@ $activeTab = [
             <td><?= $license['resourceID']; ?></td>
             <td><?= $license['schema:title']; ?></td>
             <td>
-                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#licenseViewModal" onclick="loadLicense('<?= $license['odrl:uid'] ?>', '<?= $dataset->uuid ?>', '<?= $license['schema:title'] ?>')">
+                <button type="button"
+                        class="btn btn-primary btn-sm"
+                        data-toggle="modal"
+                        data-target="#licenseViewModal"
+                        onclick="loadLocalPolicies('<?= htmlspecialchars(json_encode($license)) ?>')">
                     <i class="fas fa-search"></i> View
                 </button>
             </td>
@@ -91,34 +104,17 @@ $activeTab = [
 </table>
 
 <script>
-    function loadLicense(licenseID, datasetUUID, title) {
-        $("#permissionList").empty();
-        $("#obligationList").empty();
-        $("#prohibitionList").empty();
-        // Check if it's a standard library license or a dataset-specific custom license...
-        var custom = false;
-        var url;
-        //echo();
-        if (licenseID.substring(0,8) == "-custom-") {
-            custom = true;
-            licenseName = licenseID.substring(8);
-            url = "/dataset/policies/custom/" + datasetId + "?license=" + licenseName;
+    function loadLocalPolicies(licenseJSON) {
+        license = JSON.parse(licenseJSON);
+        console.log(license);
+        description = "";
+        if (license['schema:text']) {
+            description = license['schema:text'];
         }
-        else {
-            licenseName = licenseID;
-            url = "/policies/" + licenseName;
-        }
-
-        document.getElementById("licenseViewModalContent").innerHTML = "LOADING: " + title + "...";
-        $.getJSON(url, function(result){
-            console.log(result);
-            //document.getElementById("licenseViewModalContent").innerHTML = JSON.stringify(result[0], null, 2);
-            document.getElementById("licenseViewModalContent").innerHTML = '<h6>' + title + '</h6><hr />';
-            renderPermissions(result[0]['odrl:permission']);
-            renderObligations(result[0]['odrl:obligation']);
-            renderProhibitions(result[0]['odrl:prohibition']);
-            //console.log
-        });
+        document.getElementById("licenseViewModalContent").innerHTML = '<h6>' + license['schema:title'] + '</h6><em>' + description + '</em><hr />';
+        renderPermissions(license['odrl:permission']);
+        renderObligations(license['odrl:obligation']);
+        renderProhibitions(license['odrl:prohibition']);
     }
 
     function loadPermissionModalContent(index) {

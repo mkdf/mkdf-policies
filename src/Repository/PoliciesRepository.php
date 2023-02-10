@@ -29,6 +29,28 @@ class PoliciesRepository implements PoliciesRepositoryInterface
         }
     }
 
+    // Return a dictionary/assoc-array to look up license uid => title
+    public function getLocalLicenseTitles($datasetUuid) {
+        $licenseTitles = [];
+        //$query = [];
+        $queryJSON = '{}';
+        $fields = 'policy.document.odrl:uid,policy.document.schema:title,policy.file.odrl:uid,policy.file.schema:title,policy.dataset.odrl:uid,policy.dataset.schema:title';
+        $metadataResponse = json_decode($this->_repository->browseDocuments($this->_config['mkdf-stream']['dataset-metadata'], $queryJSON, $fields), True)['results'];
+        if (count($metadataResponse) === 0) {
+            // list is empty.
+            $metadata = [];
+        }
+        else {
+            $metadata = $metadataResponse[0];
+        }
+        if (isset($metadata['policy'])){
+            foreach ($metadata['policy']['dataset'] as $licenseItem) {
+                $licenseTitles[$licenseItem['odrl:uid']] = $licenseItem['schema:title'];
+            }
+        }
+        return $licenseTitles;
+    }
+
     public function getDatasetUserLicense($datasetUuid, $assignee, $active = true){
         $licenses = [];
         $metadataResponse = json_decode($this->_repository->getDocument($this->_config['mkdf-stream']['dataset-metadata'], $datasetUuid), True);

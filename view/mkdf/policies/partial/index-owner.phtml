@@ -395,7 +395,8 @@ $activeTab = [
     <?php foreach ($licensesAssigned as $association): ?>
         <tr>
             <td><?= $association['user'] ?></td>
-            <td><?= $association['license'] ?></td>
+            <!--<td><?= $association['license'] ?></td>-->
+            <td><?= $licenseTitles[$association['license']] ?></td>
         </tr>
     <?php endforeach; ?>
 </table>
