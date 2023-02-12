@@ -13,6 +13,12 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
 use Zend\Session\Container;
+use Zend\Mail;
+use Zend\Mail\Transport\Smtp as SmtpTransport;
+use Zend\Mail\Transport\Sendmail as SendmailTransport;
+use Zend\Mail\Transport\SmtpOptions;
+use Zend\Mime\Message as MimeMessage;
+use Zend\Mime\Part as MimePart;
 
 
 class PolicyController extends AbstractActionController
@@ -911,6 +917,28 @@ class PolicyController extends AbstractActionController
             $requestEntry = $this->buildLicenseRequest($dataset->uuid, $user_email, $data);
             //var_dump($requestEntry);
 
+            $fromEmail = $this->_config['email']['from-email'];
+            $fromLabel = $this->_config['email']['from-label'];
+            $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
+            $toEmail = $ownerDetails['email'];
+            $toLabel = $ownerDetails['full_name'];
+
+            // BUILD EMAIL REQUEST BODY
+            $bodyHtml = $this->viewRenderer->render(
+                'mkdf/policies/email/request',
+                [
+                    'datasetId'         => $id,
+                    'user'              => $this->identity(),
+                    'datasetTitle'      => $dataset->title,
+                    'datasetUuid'       => $dataset->uuid,
+                    'requestTitle'  => $data['licenseTitle'],
+                    'requestDescription'=> $data['licenseText'],
+                ]);
+            $subject = "Linked Data Hub access request";
+
+            // SEND EMAIL TO DATASET OWNER/MANAGER(S)
+            $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
+
             $this->_policyRepository->createNewLicenseRequest($requestEntry);
             $this->flashMessenger()->addMessage('License request sent.');
             return $this->redirect()->toRoute('dataset-policies', ['action'=>'requests', 'id'=>$dataset->id]);
@@ -1434,6 +1462,30 @@ class PolicyController extends AbstractActionController
             }
         }
         return $mostRecentRequest;
+    }
+
+    private function _sendEmail ($subject, $bodyHTML, $from, $fromLabel, $to, $toLabel) {
+        // Send an email to user.
+
+        $html = new MimePart($bodyHTML);
+        $html->type = "text/html";
+
+        $body = new MimeMessage();
+        $body->addPart($html);
+
+        $mail = new Mail\Message();
+        $mail->setEncoding('UTF-8');
+        $mail->setBody($body);
+        $mail->setFrom($from, $fromLabel);
+        $mail->addTo($to, $toLabel);
+        $mail->setSubject($subject);
+
+        // Setup SMTP/Sendmail transport
+        //$transport = new SmtpTransport();
+        //$options   = new SmtpOptions($this->config['smtp']);
+        //$transport->setOptions($options);
+        $transport = new SendmailTransport();
+        $transport->send($mail);
     }
 
 }
