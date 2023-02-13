@@ -934,7 +934,7 @@ class PolicyController extends AbstractActionController
                     'requestTitle'  => $data['licenseTitle'],
                     'requestDescription'=> $data['licenseText'],
                 ]);
-            $subject = "Linked Data Hub access request";
+            $subject = "Linked Data Hub license request";
 
             // SEND EMAIL TO DATASET OWNER/MANAGER(S)
             $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
@@ -1075,7 +1075,30 @@ class PolicyController extends AbstractActionController
                     $requestObj['modifiedAt'] = $nowTime;
                     $this->_policyRepository->updateLicenseRequest($request, $requestObj);
 
-                    // - Notification.
+                    // - Notification to user
+                    $fromEmail = $this->_config['email']['from-email'];
+                    $fromLabel = $this->_config['email']['from-label'];
+                    $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
+                    //$toEmail = $ownerDetails['email'];
+                    //$toLabel = $ownerDetails['full_name'];
+                    $toEmail = $requestObj['user'];
+                    $toLabel = $requestObj['user'];
+
+                    // BUILD EMAIL REQUEST BODY
+                    $bodyHtml = $this->viewRenderer->render(
+                        'mkdf/policies/email/owner-reject',
+                        [
+                            'datasetId'         => $id,
+                            'user'              => $this->identity(),
+                            'datasetTitle'      => $dataset->title,
+                            'datasetUuid'       => $dataset->uuid,
+                            'requestTitle'  => $data['licenseTitle'],
+                            'requestDescription'=> $data['licenseText'],
+                        ]);
+                    $subject = "Linked Data Hub license request rejected";
+
+                    // SEND EMAIL TO DATASET USER
+                    $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
                     // - End of process.
 
                     $this->flashMessenger()->addMessage("License request rejected by dataset manager");
@@ -1125,7 +1148,30 @@ class PolicyController extends AbstractActionController
                     $requestObj['modifiedAt'] = $nowTime;
                     $this->_policyRepository->updateLicenseRequest($request, $requestObj);
 
-                    // - Notification.
+                    // - Notification to owner
+                    $fromEmail = $this->_config['email']['from-email'];
+                    $fromLabel = $this->_config['email']['from-label'];
+                    $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
+                    $toEmail = $ownerDetails['email'];
+                    $toLabel = $ownerDetails['full_name'];
+                    //$toEmail = $requestObj['user'];
+                    //$toLabel = $requestObj['user'];
+
+                    // BUILD EMAIL REQUEST BODY
+                    $bodyHtml = $this->viewRenderer->render(
+                        'mkdf/policies/email/user-reject',
+                        [
+                            'datasetId'         => $id,
+                            'user'              => $this->identity(),
+                            'datasetTitle'      => $dataset->title,
+                            'datasetUuid'       => $dataset->uuid,
+                            'requestTitle'  => $data['licenseTitle'],
+                            'requestDescription'=> $data['licenseText'],
+                        ]);
+                    $subject = "Linked Data Hub license counter-offer rejected";
+
+                    // SEND EMAIL TO DATASET USER
+                    $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
                     // - End of process.
 
                     $this->flashMessenger()->addMessage("License counter offer rejected by user");
@@ -1227,7 +1273,28 @@ class PolicyController extends AbstractActionController
                     $this->_policyRepository->updateLicenseRequest($request, $requestObj);
 
 
-                    // - Notification.
+                    // - Notification to user
+                    $fromEmail = $this->_config['email']['from-email'];
+                    $fromLabel = $this->_config['email']['from-label'];
+                    $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
+                    $toEmail = $requestObj['user'];
+                    $toLabel = $requestObj['user'];
+
+                    // BUILD EMAIL REQUEST BODY
+                    $bodyHtml = $this->viewRenderer->render(
+                        'mkdf/policies/email/owner-approve',
+                        [
+                            'datasetId'         => $id,
+                            'user'              => $this->identity(),
+                            'datasetTitle'      => $dataset->title,
+                            'datasetUuid'       => $dataset->uuid,
+                            'requestTitle'  => $data['licenseTitle'],
+                            'requestDescription'=> $data['licenseText'],
+                        ]);
+                    $subject = "Linked Data Hub license request approved";
+
+                    // SEND EMAIL TO DATASET USER
+                    $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
                     // - End of process.
 
                     $this->flashMessenger()->addMessage("License request approved by dataset manager");
@@ -1302,7 +1369,30 @@ class PolicyController extends AbstractActionController
                     $this->_policyRepository->updateLicenseRequest($request, $requestObj);
 
 
-                    // - Notification.
+                    // - Notification to owner
+                    $fromEmail = $this->_config['email']['from-email'];
+                    $fromLabel = $this->_config['email']['from-label'];
+                    $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
+                    $toEmail = $ownerDetails['email'];
+                    $toLabel = $ownerDetails['full_name'];
+                    //$toEmail = $requestObj['user'];
+                    //$toLabel = $requestObj['user'];
+
+                    // BUILD EMAIL REQUEST BODY
+                    $bodyHtml = $this->viewRenderer->render(
+                        'mkdf/policies/email/user-accept',
+                        [
+                            'datasetId'         => $id,
+                            'user'              => $this->identity(),
+                            'datasetTitle'      => $dataset->title,
+                            'datasetUuid'       => $dataset->uuid,
+                            'requestTitle'  => $data['licenseTitle'],
+                            'requestDescription'=> $data['licenseText'],
+                        ]);
+                    $subject = "Linked Data Hub license counter-offer accepted";
+
+                    // SEND EMAIL TO DATASET USER
+                    $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
                     // - End of process.
 
                     $this->flashMessenger()->addMessage("License request accepted and approved");
@@ -1375,7 +1465,30 @@ class PolicyController extends AbstractActionController
                 $requestObj['modifiedAt'] = $nowTime;
                 $this->_policyRepository->updateLicenseRequest($request, $requestObj);
 
-                // - Notification.
+                // - Notification to user
+                $fromEmail = $this->_config['email']['from-email'];
+                $fromLabel = $this->_config['email']['from-label'];
+                $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
+                //$toEmail = $ownerDetails['email'];
+                //$toLabel = $ownerDetails['full_name'];
+                $toEmail = $requestObj['user'];
+                $toLabel = $requestObj['user'];
+
+                // BUILD EMAIL REQUEST BODY
+                $bodyHtml = $this->viewRenderer->render(
+                    'mkdf/policies/email/counter-offer',
+                    [
+                        'datasetId'         => $id,
+                        'user'              => $this->identity(),
+                        'datasetTitle'      => $dataset->title,
+                        'datasetUuid'       => $dataset->uuid,
+                        'requestTitle'  => $data['licenseTitle'],
+                        'requestDescription'=> $data['licenseText'],
+                    ]);
+                $subject = "Linked Data Hub license counter-offer";
+
+                // SEND EMAIL TO DATASET USER
+                $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
                 // - End of process.
 
                 $this->flashMessenger()->addMessage("License counter offer submitted to user");
@@ -1421,7 +1534,30 @@ class PolicyController extends AbstractActionController
                 $requestObj['modifiedAt'] = $nowTime;
                 $this->_policyRepository->updateLicenseRequest($request, $requestObj);
 
-                // - Notification.
+                // - Notification to owner
+                $fromEmail = $this->_config['email']['from-email'];
+                $fromLabel = $this->_config['email']['from-label'];
+                $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
+                $toEmail = $ownerDetails['email'];
+                $toLabel = $ownerDetails['full_name'];
+                //$toEmail = $requestObj['user'];
+                //$toLabel = $requestObj['user'];
+
+                // BUILD EMAIL REQUEST BODY
+                $bodyHtml = $this->viewRenderer->render(
+                    'mkdf/policies/email/counter-request',
+                    [
+                        'datasetId'         => $id,
+                        'user'              => $this->identity(),
+                        'datasetTitle'      => $dataset->title,
+                        'datasetUuid'       => $dataset->uuid,
+                        'requestTitle'  => $data['licenseTitle'],
+                        'requestDescription'=> $data['licenseText'],
+                    ]);
+                $subject = "Linked Data Hub license counter-request";
+
+                // SEND EMAIL TO DATASET USER
+                $this->_sendEmail($subject, $bodyHtml, $fromEmail, $fromLabel, $toEmail, $toLabel);
                 // - End of process.
 
                 $this->flashMessenger()->addMessage("License counter request submitted");
