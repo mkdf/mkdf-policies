@@ -1534,7 +1534,7 @@ class PolicyController extends AbstractActionController
                 $requestObj['modifiedAt'] = $nowTime;
                 $this->_policyRepository->updateLicenseRequest($request, $requestObj);
 
-                // - Notification to owner
+                // - Notification to dataset owner
                 $fromEmail = $this->_config['email']['from-email'];
                 $fromLabel = $this->_config['email']['from-label'];
                 $ownerDetails = $this->_dataset_repository->getDatasetOwner($id);
