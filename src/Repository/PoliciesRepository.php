@@ -32,8 +32,11 @@ class PoliciesRepository implements PoliciesRepositoryInterface
     // Return a dictionary/assoc-array to look up license uid => title
     public function getLocalLicenseTitles($datasetUuid) {
         $licenseTitles = [];
-        //$query = [];
-        $queryJSON = '{}';
+        $query = [
+            '_id' => $datasetUuid
+        ];
+        //$queryJSON = '{}';
+        $queryJSON = json_encode($query);
         $fields = 'policy.document.odrl:uid,policy.document.schema:title,policy.file.odrl:uid,policy.file.schema:title,policy.dataset.odrl:uid,policy.dataset.schema:title';
         $metadataResponse = json_decode($this->_repository->browseDocuments($this->_config['mkdf-stream']['dataset-metadata'], $queryJSON, $fields), True)['results'];
         if (count($metadataResponse) === 0) {
