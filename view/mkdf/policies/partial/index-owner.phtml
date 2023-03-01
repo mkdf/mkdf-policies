@@ -152,7 +152,7 @@ $activeTab = [
 
 <hr />
 
-<h5>Licenses applied:</h5>
+<h5>Active Licenses</h5>
 
 
 <div class="accordion" id="parentAccordion">
@@ -345,47 +345,31 @@ $activeTab = [
 
 <hr />
 
-<div class="accordion" id="historyAccordion">
+<h5>Inactive Licenses <!--<em>(assignee: <?= $assignee ?>)</em>--></h5>
 
-
-    <div class="card">
-        <div class="card-header" id="headingThree">
-            <h5 class="mb-0">
-                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                    Inactive licenses <em>(assignee: <?= $assignee ?>)</em>
-                </button>
-            </h5>
-        </div>
-        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#historyAccordion">
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th scope="col">License</th>
-                        <th scope="col">Valid from</th>
-                        <th scope="col">Valid until</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                    foreach ($history as $row) {
-                        print ("<tr>");
-                        print ("<td>".$row['schema:title']."</td>");
-                        print ("<td>".date("d/m/Y H:i:s", $row['schema:validFrom'])."</td>");
-                        print ("<td>".date("d/m/Y H:i:s", $row['schema:validUntil'])."</td>");
-                        print ("</tr>");
-                    }
-                    ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-
-</div>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th scope="col">License</th>
+        <th scope="col">Valid from</th>
+        <th scope="col">Valid until</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php
+    foreach ($history as $row) {
+        print ("<tr>");
+        print ("<td>".$row['schema:title']."</td>");
+        print ("<td>".date("d/m/Y H:i:s", $row['schema:validFrom'])."</td>");
+        print ("<td>".date("d/m/Y H:i:s", $row['schema:validUntil'])."</td>");
+        print ("</tr>");
+    }
+    ?>
+    </tbody>
+</table>
 
 <hr />
+
 <h5>Licenses in use with API keys</h5>
 <table class="table table-bordered">
     <tr>
