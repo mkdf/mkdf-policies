@@ -78,26 +78,28 @@
 
             <form id="selectLicense" method="get" action="<?= $this->url( 'dataset-policies', ['id'=>$dataset->id, 'action'=>'apply'],[]); ?>">
 
-                <select class="form-control" id="licenseSelect" name="license" onchange="loadLicense();">
-                    <option disabled>──────────</option>
+                <select class="form-control licenseSelect" id="licenseSelect" name="license" onchange="loadLicense();">
+                    <!--<option disabled>──────────</option>
                     <option disabled>Custom licenses</option>
-                    <option disabled>──────────</option>
-
+                    <option disabled>──────────</option>-->
+                    <optgroup label="Custom licenses">
                     <?php
                     foreach ($customLicenses as $value) {
-                    print("<option value='-custom-".$value['schema:title']."'>".$value['schema:title']. " </option>\n");
-                }
-                ?>
-                    <option disabled>──────────</option>
+                        print("<option value='-custom-".$value['schema:title']."'>".$value['schema:title']. " </option>\n");
+                    }
+                    ?>
+                    </optgroup>
+                    <!--<option disabled>──────────</option>
                     <option disabled>Standard licenses</option>
-                    <option disabled>──────────</option>
-
+                    <option disabled>──────────</option>-->
+                    <optgroup label="Standard licenses">
                 <?php
                     //print_r($licenses)
                     foreach ($licenses as $value) {
                         print("<option value='".$value->{'odrl:uid'}."'>".$value->{'schema:title'} . " </option>\n");
                     }
                 ?>
+                    </optgroup>
                 </select>
 
                 <hr />
@@ -255,7 +257,6 @@
         </div>
     </div>
 </div>
-
 <script>
     function loadLicense() {
         var license = document.getElementById("licenseSelect").value;
@@ -375,5 +376,6 @@
 
     $(document).ready(function(){
         loadLicense();
+        $('.licenseSelect').select2();
     });
 </script>
